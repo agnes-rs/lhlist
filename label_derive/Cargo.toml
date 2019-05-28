@@ -1,0 +1,22 @@
+[package]
+name = "label_derive"
+version = "0.1.0"
+authors = ["Jamie Blondin <jblondin@gmail.com>"]
+edition = "2018"
+
+[features]
+default = ["extra-traits"]
+extra-traits = []
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "0.6"
+proc-macro2 = "0.4"
+
+[target.'cfg(feature="extra-traits")'.dependencies]
+syn = { version = "0.15", features = ["extra-traits"] }
+
+[target.'cfg(not(feature="extra-traits"))'.dependencies]
+syn = "0.15"
