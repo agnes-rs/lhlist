@@ -122,3 +122,31 @@ macro_rules! lvcons {
         }
     );
 }
+
+
+#[cfg(test)]
+mod tests {
+    use crate::*;
+
+    #[label(name = "My Label")]
+    #[derive(Debug)]
+    struct Label1;
+
+    #[label(dtype = u8)]
+    #[derive(Debug)]
+    struct Label2;
+
+    #[label]
+    #[derive(Debug)]
+    struct Label3;
+
+    #[test]
+    fn label_create() {
+        assert_eq!(Label1::name(), "My Label");
+
+        assert_eq!(Label2::name(), "Label2");
+        assert_eq!(<Label2 as Label>::AssocType::max_value(), 255u8);
+
+        assert_eq!(Label3::name(), "Label3");
+    }
+}

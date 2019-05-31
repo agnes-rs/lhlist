@@ -62,3 +62,26 @@ where
         LookupElemByLabel::<TargetL>::elem(&self.tail)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::*;
+
+    #[label(name = "My Label")]
+    #[derive(Debug)]
+    struct Label1;
+
+    #[label(dtype = u8)]
+    #[derive(Debug)]
+    struct Label2;
+
+    #[label]
+    #[derive(Debug)]
+    struct Label3;
+
+    #[test]
+    fn lookup() {
+        let list = lcons![Label1, Label2];
+        println!("{:?}", LookupElemByLabel::<Label2>::elem(&list));
+    }
+}

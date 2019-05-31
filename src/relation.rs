@@ -80,3 +80,52 @@ where
 {
     type Output = <T as Member<TargetL>>::Output;
 }
+
+
+#[cfg(test)]
+mod tests {
+    use crate::*;
+
+    #[label(name = "My Label")]
+    #[derive(Debug)]
+    struct Label1;
+
+    #[label(dtype = u8)]
+    #[derive(Debug)]
+    struct Label2;
+
+    #[label]
+    #[derive(Debug)]
+    struct Label3;
+
+    #[test]
+    fn label_eq() {
+        assert!(<Label1 as LabelEq<Label1>>::Output::VALUE);
+        assert!(<Label2 as LabelEq<Label2>>::Output::VALUE);
+        assert!(<Label3 as LabelEq<Label3>>::Output::VALUE);
+
+        assert!(!<Label1 as LabelEq<Label2>>::Output::VALUE);
+        assert!(!<Label1 as LabelEq<Label3>>::Output::VALUE);
+
+        assert!(!<Label2 as LabelEq<Label1>>::Output::VALUE);
+        assert!(!<Label2 as LabelEq<Label3>>::Output::VALUE);
+
+        assert!(!<Label3 as LabelEq<Label1>>::Output::VALUE);
+        assert!(!<Label3 as LabelEq<Label2>>::Output::VALUE);
+    }
+
+    #[test]
+    fn member() {
+        // type-based member testing
+        type TestList = LCons<Label1, LCons<Label2, Nil>>;
+        assert!(<TestList as Member<Label1>>::Output::VALUE);
+        assert!(<TestList as Member<Label2>>::Output::VALUE);
+        assert!(!<TestList as Member<Label3>>::Output::VALUE);
+
+        // value-based member testing
+        let list = lcons![Label1, Label2];
+        assert!(list.has_label(Label1));
+        assert!(list.has_label(Label2));
+        assert!(!list.has_label(Label3));
+    }
+}
