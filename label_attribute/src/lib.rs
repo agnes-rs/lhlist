@@ -30,20 +30,31 @@ impl Parse for LabelStruct {
 #[cfg_attr(feature="extra-traits", derive(Debug))]
 enum LabelMeta {
     CustomName(pm2::Literal),
-    AssocType(syn::Ident),
+    AssocType(syn::Type),
 }
 
 impl Parse for LabelMeta {
     fn parse(input: ParseStream) -> parse::Result<Self> {
-        let meta_name: syn::Ident = input.parse()?;
+        let lookahead = input.lookahead1();
+        let (span, meta_name_str) = if lookahead.peek(Token![type]) {
+            let tok: Token![type] = input.parse()?;
+            (tok.span, "type".to_string())
+        } else {
+            let meta_name: syn::Ident = input.parse()?;
+            (meta_name.span(), meta_name.to_string())
+        };
         let _: Token![=] = input.parse()?;
-        let meta_name_str = meta_name.to_string();
-        if meta_name_str == "name" {
+
+        const LABEL_NAME_ID: &str = "name";
+        const TYPE_IDS: [&str; 2] = ["type", "assoc_type"];
+
+        if meta_name_str == LABEL_NAME_ID {
             input.parse().map(LabelMeta::CustomName)
-        } else if meta_name_str == "assoc_type" || meta_name_str == "dtype" {
+        } else if TYPE_IDS.contains(&&meta_name_str[..]) {
             input.parse().map(LabelMeta::AssocType)
         } else {
-            Err(syn::Error::new(meta_name.span(), "expected `name`, `assoc_type`, or `dtype`"))
+            Err(syn::Error::new(span,
+                format!["expected {}, or {}", TYPE_IDS.join(", "), meta_name_str]))
         }
     }
 }
@@ -51,7 +62,7 @@ impl Parse for LabelMeta {
 #[cfg_attr(feature="extra-traits", derive(Debug))]
 struct LabelOptions {
     name: Option<pm2::Literal>,
-    assoc_type: Option<syn::Ident>,
+    assoc_type: Option<syn::Type>,
 }
 
 impl Parse for LabelOptions {

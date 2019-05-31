@@ -1,5 +1,5 @@
 use crate::cons::LVCons;
-use crate::label::Labeled;
+use crate::label::{Label, Labeled};
 use crate::relation::{True, False, LabelEq, Member};
 
 /// Lookup a specific element in a list by label.
@@ -10,9 +10,9 @@ pub trait LookupElemByLabel<TargetL> {
     fn elem(&self) -> &Self::Elem;
 }
 
-impl<TargetL, L, V, T> LookupElemByLabel<TargetL> for LVCons<L, V, T>
+impl<TargetL, L, T> LookupElemByLabel<TargetL> for LVCons<L, T>
 where
-    L: LabelEq<TargetL>,
+    L: Label + LabelEq<TargetL>,
     T: Member<TargetL>,
     Self: LookupElemByLabelMatch<
         TargetL,
@@ -43,17 +43,20 @@ pub trait LookupElemByLabelMatch<L, LabelMatch, TailMatch> {
     fn elem(&self) -> &Self::Elem;
 }
 
-impl<TargetL, L, V, T, TailMatch> LookupElemByLabelMatch<TargetL, True, TailMatch>
-    for LVCons<L, V, T>
+impl<TargetL, L, T, TailMatch> LookupElemByLabelMatch<TargetL, True, TailMatch>
+    for LVCons<L, T>
+where
+    L: Label
 {
-    type Elem = Labeled<L, V>;
+    type Elem = Labeled<L>;
 
     fn elem(&self) -> &Self::Elem { &self.head }
 }
 
-impl<TargetL, L, V, T> LookupElemByLabelMatch<TargetL, False, True>
-    for LVCons<L, V, T>
+impl<TargetL, L, T> LookupElemByLabelMatch<TargetL, False, True>
+    for LVCons<L, T>
 where
+    L: Label,
     T: LookupElemByLabel<TargetL>
 {
     type Elem = <T as LookupElemByLabel<TargetL>>::Elem;
@@ -67,11 +70,11 @@ where
 mod tests {
     use crate::*;
 
-    #[label(name = "My Label")]
+    #[label(name="My Label", type=String)]
     #[derive(Debug)]
     struct Label1;
 
-    #[label(dtype = u8)]
+    #[label(type=u8)]
     #[derive(Debug)]
     struct Label2;
 
@@ -81,7 +84,10 @@ mod tests {
 
     #[test]
     fn lookup() {
-        let list = lcons![Label1, Label2];
+        let list = lhlist![
+            Label1 = "first value".to_string(),
+            Label2 = 2
+        ];
         println!("{:?}", LookupElemByLabel::<Label2>::elem(&list));
     }
 }

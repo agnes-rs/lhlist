@@ -1,6 +1,6 @@
 use typenum::{B0, B1, IsEqual};
 
-use crate::cons::{Nil, LVCons};
+use crate::cons::{Nil, Cons};
 use crate::label::Label;
 
 /// Marker struct signifying `true`.
@@ -56,9 +56,9 @@ pub trait Member<TargetL> {
 impl<TargetL> Member<TargetL> for Nil {
     type Output = False;
 }
-impl<TargetL, L, V, T> Member<TargetL> for LVCons<L, V, T>
+impl<TargetL, L, T> Member<TargetL> for Cons<L, T>
 where
-    L: LabelEq<TargetL>,
+    L: Label + LabelEq<TargetL>,
     Self: MemberMatch<TargetL, <L as LabelEq<TargetL>>::Output>,
 {
     type Output = <Self as MemberMatch<TargetL, <L as LabelEq<TargetL>>::Output>>::Output;
@@ -70,12 +70,12 @@ pub trait MemberMatch<L, HeadMatch> {
     type Output: Bool;
 }
 
-impl<TargetL, V, T> MemberMatch<TargetL, True> for LVCons<TargetL, V, T>
-{
+impl<TargetL, L, T> MemberMatch<TargetL, True> for Cons<L, T> {
     type Output = True;
 }
-impl<TargetL, L, V, T> MemberMatch<TargetL, False> for LVCons<L, V, T>
+impl<TargetL, L, T> MemberMatch<TargetL, False> for Cons<L, T>
 where
+    L: Label,
     T: Member<TargetL>,
 {
     type Output = <T as Member<TargetL>>::Output;
@@ -90,7 +90,7 @@ mod tests {
     #[derive(Debug)]
     struct Label1;
 
-    #[label(dtype = u8)]
+    #[label(type=u8)]
     #[derive(Debug)]
     struct Label2;
 
@@ -123,7 +123,7 @@ mod tests {
         assert!(!<TestList as Member<Label3>>::Output::VALUE);
 
         // value-based member testing
-        let list = lcons![Label1, Label2];
+        let list = labels![Label1, Label2];
         assert!(list.has_label(Label1));
         assert!(list.has_label(Label2));
         assert!(!list.has_label(Label3));

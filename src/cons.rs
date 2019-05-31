@@ -1,4 +1,6 @@
-use crate::label::{Labeled};
+use std::marker::PhantomData;
+
+use crate::label::{Label, Labeled};
 use crate::iter::{ConsIterator, ValuesIterator};
 use crate::relation::{Bool, Member};
 
@@ -23,11 +25,11 @@ impl<Head, Tail> Cons<Head, Tail> {
 }
 
 /// A cons-list containing a set of labeled values.
-pub type LVCons<Label, Value, Tail> = Cons<Labeled<Label, Value>, Tail>;
+pub type LVCons<Label, Tail> = Cons<Labeled<Label>, Tail>;
 /// A cons-list containing only labels.
-pub type LCons<Label, Tail> = Cons<Labeled<Label, ()>, Tail>;
+pub type LCons<Label, Tail> = Cons<PhantomData<Label>, Tail>;
 
-impl<Label, Value, Tail> LVCons<Label, Value, Tail> {
+impl<Lbl, Tail> Cons<Lbl, Tail> where Lbl: Label {
     /// Returns `true` if target label exists in this list.
     ///
     /// Convenience function for calling

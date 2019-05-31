@@ -4,7 +4,7 @@ Iteration over heterogeneous cons-lists and labeled heterogeneous cons-lists.
 
 */
 use crate::cons::{Cons, LVCons, Nil};
-use crate::label::Labeled;
+use crate::label::{Label, Labeled};
 
 /// An iterator over a heterogeneous cons-list ([Cons](../struct.Cons.html));
 #[derive(Debug)]
@@ -77,22 +77,25 @@ impl<'a, List, A> ValuesIterator<'a, List, A> {
     }
 }
 
-impl<'a, L, V, T, A> ValuesIterator<'a, LVCons<L, V, T>, A>
+impl<'a, L, T, A> ValuesIterator<'a, LVCons<L, T>, A>
 where
-    A: Adapter<&'a V>,
+    L: Label,
+    A: Adapter<&'a L::AssocType>,
 {
     /// Returns the next value (if exists) along with a new iterator advanced to the next element of
     /// the list.
-    pub fn next(mut self) -> (<A as Adapter<&'a V>>::Output, ValuesIterator<'a, T, A>) {
+    pub fn next(mut self)
+        -> (<A as Adapter<&'a L::AssocType>>::Output, ValuesIterator<'a, T, A>)
+    {
         (
             self.adapter.adapt(&self.list.head.value),
             ValuesIterator::with_adapter(&self.list.tail, self.adapter)
         )
     }
     /// Creates an iterator which call a [MapFunc](trait.MapFunc.html) on each element.
-    pub fn map<F>(self, f: F) -> ValuesIterator<'a, LVCons<L, V, T>, Cons<MapAdapter<F>, A>>
+    pub fn map<F>(self, f: F) -> ValuesIterator<'a, LVCons<L, T>, Cons<MapAdapter<F>, A>>
     where
-        F: MapFunc<<A as Adapter<&'a V>>::Output>
+        F: MapFunc<<A as Adapter<&'a L::AssocType>>::Output>
     {
         ValuesIterator::with_adapter(self.list, Cons { head: MapAdapter { f }, tail: self.adapter })
     }
@@ -170,13 +173,14 @@ impl<'a, A> CollectIntoHList for ValuesIterator<'a, Nil, A> {
     fn collect_into_hlist(self) -> Self::Output { Nil }
 }
 
-impl<'a, A, L, V, T> CollectIntoHList for ValuesIterator<'a, LVCons<L, V, T>, A>
+impl<'a, A, L, T> CollectIntoHList for ValuesIterator<'a, LVCons<L, T>, A>
 where
-    A: Adapter<&'a V>,
+    L: Label,
+    A: Adapter<&'a L::AssocType>,
     ValuesIterator<'a, T, A>: CollectIntoHList
 {
     type Output = Cons<
-        <A as Adapter<&'a V>>::Output,
+        <A as Adapter<&'a L::AssocType>>::Output,
         <ValuesIterator<'a, T, A> as CollectIntoHList>::Output
     >;
     fn collect_into_hlist(self) -> Self::Output {
@@ -230,20 +234,20 @@ impl<'a, A> CollectIntoLabeledHList for ConsIterator<'a, Nil, A> {
     fn collect_into_labeled_hlist(self) -> Self::Output { Nil }
 }
 
-impl<'a, A, L, V, T> CollectIntoLabeledHList for ConsIterator<'a, LVCons<L, V, T>, A>
+impl<'a, A, L, T> CollectIntoLabeledHList for ConsIterator<'a, LVCons<L, T>, A>
 where
-    A: Adapter<&'a Labeled<L, V>>,
+    L: Label,
+    A: Adapter<&'a Labeled<L>, Output=L::AssocType>,
     ConsIterator<'a, T, A>: CollectIntoHList
 {
     type Output = LVCons<
         L,
-        <A as Adapter<&'a Labeled<L, V>>>::Output,
         <ConsIterator<'a, T, A> as CollectIntoHList>::Output
     >;
     fn collect_into_labeled_hlist(self) -> Self::Output {
         let (item, next_iter) = self.next();
         Cons {
-            head: Labeled::from(item),
+            head: Labeled::new(item),
             tail: next_iter.collect_into_hlist()
         }
     }
@@ -254,20 +258,20 @@ impl<'a, A> CollectIntoLabeledHList for ValuesIterator<'a, Nil, A> {
     fn collect_into_labeled_hlist(self) -> Self::Output { Nil }
 }
 
-impl<'a, A, L, V, T> CollectIntoLabeledHList for ValuesIterator<'a, LVCons<L, V, T>, A>
+impl<'a, A, L, T> CollectIntoLabeledHList for ValuesIterator<'a, LVCons<L, T>, A>
 where
-    A: Adapter<&'a V>,
+    L: Label,
+    A: Adapter<&'a L::AssocType, Output=L::AssocType>,
     ValuesIterator<'a, T, A>: CollectIntoHList
 {
     type Output = LVCons<
         L,
-        <A as Adapter<&'a V>>::Output,
         <ValuesIterator<'a, T, A> as CollectIntoHList>::Output
     >;
     fn collect_into_labeled_hlist(self) -> Self::Output {
         let (item, next_iter) = self.next();
         Cons {
-            head: Labeled::from(item),
+            head: Labeled::new(item),
             tail: next_iter.collect_into_hlist()
         }
     }
@@ -278,21 +282,21 @@ mod tests {
     use crate::*;
     use crate::iter::*;
 
-    #[label]
+    #[label(type=Vec<usize>)]
     #[derive(Debug)]
     struct Label1;
 
-    #[label]
+    #[label(type=Vec<&'static str>)]
     #[derive(Debug)]
     struct Label2;
 
-    #[label]
+    #[label(type=Vec<f64>)]
     #[derive(Debug)]
     struct Label3;
 
     #[test]
     fn iterate() {
-        let test_list = lvcons![
+        let test_list = lhlist![
             Label1 = vec![8usize, 4, 1, 5, 2],
             Label2 = vec!["Hello", "World!"],
             Label3 = vec![0.4f64, -3.5, 3.5, 0.3],
@@ -304,7 +308,7 @@ mod tests {
 
     #[test]
     fn map() {
-        let test_list = lvcons![
+        let test_list = lhlist![
             Label1 = vec![8usize, 4, 1, 5, 2],
             Label2 = vec!["Hello", "World!"],
             Label3 = vec![0.4f64, -3.5, 3.5, 0.3],
