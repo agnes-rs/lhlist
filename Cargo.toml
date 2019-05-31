@@ -6,5 +6,5 @@ authors = ["Jamie Blondin <jblondin@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-label_derive = { path = "label_derive" }
+label_attribute = { path = "label_attribute" }
 typenum = "1.10.0"

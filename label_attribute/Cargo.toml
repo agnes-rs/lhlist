@@ -1,5 +1,5 @@
 [package]
-name = "label_derive"
+name = "label_attribute"
 version = "0.1.0"
 authors = ["Jamie Blondin <jblondin@gmail.com>"]
 edition = "2018"

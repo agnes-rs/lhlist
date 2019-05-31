@@ -10,9 +10,9 @@ Library for labeled heterogeneous lists.
 #![warn(missing_docs)]
 
 extern crate typenum;
-extern crate label_derive;
+extern crate label_attribute;
 
-pub use label_derive::*;
+pub use label_attribute::*;
 
 
 mod cons;

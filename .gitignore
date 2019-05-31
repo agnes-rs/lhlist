@@ -1,4 +1,4 @@
 /target
-/label_derive/target
+/label_attribute/target
 **/*.rs.bk
 Cargo.lock
