@@ -71,15 +71,12 @@ mod tests {
     use crate::*;
 
     #[label(name="My Label", type=String)]
-    #[derive(Debug)]
     struct Label1;
 
     #[label(type=u8)]
-    #[derive(Debug)]
     struct Label2;
 
     #[label]
-    #[derive(Debug)]
     struct Label3;
 
     #[test]

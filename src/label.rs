@@ -83,7 +83,7 @@ impl<L> Label for std::marker::PhantomData<L> where L: Label {
 }
 
 /// A value along with its label.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct Labeled<L: Label> {
     /// Labeled value
     pub value: L::AssocType,
@@ -152,15 +152,12 @@ mod tests {
     use crate::*;
 
     #[label(name = "My Label")]
-    #[derive(Debug)]
     struct Label1;
 
     #[label(type=u8)]
-    #[derive(Debug)]
     struct Label2;
 
     #[label]
-    #[derive(Debug)]
     struct Label3;
 
     #[test]

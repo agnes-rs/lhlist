@@ -114,6 +114,7 @@ fn impl_label(
 
     let generated = quote! {
         #(#attrs)*
+        #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
         struct #name;
         impl Label for #name {
             const NAME: &'static str = #name_str;

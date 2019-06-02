@@ -283,15 +283,12 @@ mod tests {
     use crate::iter::*;
 
     #[label(type=Vec<usize>)]
-    #[derive(Debug)]
     struct Label1;
 
     #[label(type=Vec<&'static str>)]
-    #[derive(Debug)]
     struct Label2;
 
     #[label(type=Vec<f64>)]
-    #[derive(Debug)]
     struct Label3;
 
     #[test]
