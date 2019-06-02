@@ -58,10 +58,10 @@ pub use label_attribute::*;
 
 
 mod cons;
-pub use cons::{Nil, Cons, LCons, LVCons};
+pub use cons::{Nil, cons, Cons, LCons, LVCons};
 
 mod label;
-pub use label::{Label, Labeled, new_labeled, new_labeled_typearg};
+pub use label::{Label, Labeled, labeled, labeled_typearg};
 
 mod relation;
 pub use relation::{True, False, Bool, ToBool, LabelEq, Member};

@@ -17,6 +17,11 @@ pub struct Cons<H, T> {
     pub tail: T,
 }
 
+/// Create a new cons-list.
+pub fn cons<H, T>(head: H, tail: T) -> Cons<H, T> {
+    Cons { head, tail }
+}
+
 impl<Head, Tail> Cons<Head, Tail> {
     /// Returns a iterator over this cons-list.
     pub fn iter<'a>(&'a self) -> ConsIterator<'a, Self> {

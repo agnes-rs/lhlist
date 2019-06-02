@@ -101,27 +101,39 @@ impl<L> Label for Labeled<L> where L: Label {
 }
 /// Creates a new [Labeled](struct.Labeled.html) object for placement into an
 /// [LVCons](type.LVCons.html) list.
-pub fn new_labeled<L>(_label: L) -> Labeled<L> where L: Label<AssocType=()> {
-    new_labeled_typearg::<L>()
+pub fn labeled<L>(_label: L, value: L::AssocType) -> Labeled<L> where L: Label {
+    labeled_typearg::<L>(value)
 }
 /// Creates a new [Labeled](struct.Labeled.html) object for placement into an
 /// [LVCons](type.LVCons.html) list.
-pub fn new_labeled_typearg<L>() -> Labeled<L> where L: Label<AssocType=()> {
-    Labeled { value: () }
+pub fn labeled_typearg<L>(value: L::AssocType) -> Labeled<L> where L: Label {
+    Labeled { value }
+}
+
+/// Macro for creating type signature for a [LCons](type.LCons.html) label-only cons-list.
+#[macro_export]
+macro_rules! Labels {
+    () => ( $crate::Nil );
+    ($label:ty) => (
+        $crate::LCons<$label, $crate::Nil>
+    );
+    ($label:ty, $($rest:tt)*) => (
+        $crate::LCons<$label, Labels![$($rest)*]>
+    )
 }
 
 /// Macro for creating [LCons](type.LCons.html) label-only cons-lists.
 #[macro_export]
 macro_rules! labels {
-    () => ( Nil );
+    () => ( $crate::Nil );
     ($label:ty) => (
-        Cons {
+        $crate::Cons {
             head: std::marker::PhantomData::<$label>,
-            tail: Nil
+            tail: $crate::Nil
         }
     );
     ($label:ty, $($rest:tt)*) => (
-        Cons {
+        $crate::Cons {
             head: std::marker::PhantomData::<$label>,
             tail: labels![$($rest)*]
         }
