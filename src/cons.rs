@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use crate::label::{Label, Labeled};
+use crate::label::{Label, LabeledValue};
 use crate::iter::{ConsIterator, ValuesIterator};
 use crate::relation::{Bool, Member};
 
@@ -30,7 +30,7 @@ impl<Head, Tail> Cons<Head, Tail> {
 }
 
 /// A cons-list containing a set of labeled values.
-pub type LVCons<Label, Tail> = Cons<Labeled<Label>, Tail>;
+pub type LVCons<Label, Tail> = Cons<LabeledValue<Label>, Tail>;
 /// A cons-list containing only labels.
 pub type LCons<Label, Tail> = Cons<PhantomData<Label>, Tail>;
 

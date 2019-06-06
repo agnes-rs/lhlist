@@ -4,7 +4,7 @@ Iteration over heterogeneous cons-lists and labeled heterogeneous cons-lists.
 
 */
 use crate::cons::{Cons, LCons, LVCons, Nil};
-use crate::label::{Label, Labeled};
+use crate::label::{Label, LabeledValue};
 
 /// An iterator over a heterogeneous cons-list ([Cons](../struct.Cons.html));
 ///
@@ -12,7 +12,7 @@ use crate::label::{Label, Labeled};
 /// ([LVCons](../type.LVCons.html)), see [ValuesIterator](struct.ValuesIterator.html).
 /// ## Example
 ///
-/// This example demonstrates building and iterating over the `Labeled` values of a heterogeneous
+/// This example demonstrates building and iterating over the `LabeledValue`s of a heterogeneous
 /// cons-list.
 /// ```
 /// # #[macro_use] extern crate lhlist;
@@ -330,7 +330,7 @@ impl<'a, TargetL, TargetT, A, L, T> CollectIntoLabeledHList<LCons<TargetL, Targe
 where
     L: Label,
     TargetL: Label,
-    A: Adapter<&'a Labeled<L>, Output=TargetL::AssocType>,
+    A: Adapter<&'a LabeledValue<L>, Output=TargetL::AssocType>,
     ConsIterator<'a, T, A>: CollectIntoLabeledHList<TargetT>
 {
     type Output = LVCons<
@@ -340,7 +340,7 @@ where
     fn collect_into_labeled_hlist(self) -> Self::Output {
         let (item, next_iter) = self.next();
         Cons {
-            head: Labeled::new(item),
+            head: LabeledValue::new(item),
             tail: next_iter.collect_into_labeled_hlist()
         }
     }
@@ -368,7 +368,7 @@ where
     fn collect_into_labeled_hlist(self) -> Self::Output {
         let (item, next_iter) = self.next();
         Cons {
-            head: Labeled::new(item),
+            head: LabeledValue::new(item),
             tail: next_iter.collect_into_labeled_hlist()
         }
     }

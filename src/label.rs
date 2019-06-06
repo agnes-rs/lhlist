@@ -84,30 +84,30 @@ impl<L> Label for std::marker::PhantomData<L> where L: Label {
 
 /// A value along with its label.
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub struct Labeled<L: Label> {
-    /// Labeled value
+pub struct LabeledValue<L: Label> {
+    /// LabeledValue value
     pub value: L::AssocType,
 }
-impl<L> Labeled<L> where L: Label {
+impl<L> LabeledValue<L> where L: Label {
     /// Create a new labeled value.
-    pub fn new(value: L::AssocType) -> Labeled<L> {
-        Labeled { value }
+    pub fn new(value: L::AssocType) -> LabeledValue<L> {
+        LabeledValue { value }
     }
 }
-impl<L> Label for Labeled<L> where L: Label {
+impl<L> Label for LabeledValue<L> where L: Label {
     const NAME: &'static str = L::NAME;
     type AssocType = L::AssocType;
     type Uid = L::Uid;
 }
-/// Creates a new [Labeled](struct.Labeled.html) object for placement into an
+/// Creates a new [LabeledValue](struct.LabeledValue.html) object for placement into an
 /// [LVCons](type.LVCons.html) list.
-pub fn labeled<L>(_label: L, value: L::AssocType) -> Labeled<L> where L: Label {
+pub fn labeled<L>(_label: L, value: L::AssocType) -> LabeledValue<L> where L: Label {
     labeled_typearg::<L>(value)
 }
-/// Creates a new [Labeled](struct.Labeled.html) object for placement into an
+/// Creates a new [LabeledValue](struct.LabeledValue.html) object for placement into an
 /// [LVCons](type.LVCons.html) list.
-pub fn labeled_typearg<L>(value: L::AssocType) -> Labeled<L> where L: Label {
-    Labeled { value }
+pub fn labeled_typearg<L>(value: L::AssocType) -> LabeledValue<L> where L: Label {
+    LabeledValue { value }
 }
 
 /// Macro for creating type signature for a [LCons](type.LCons.html) label-only cons-list.
@@ -146,13 +146,13 @@ macro_rules! lhlist {
     () => ( $crate::Nil );
     ($label:ty = $value:expr) => (
         $crate::Cons {
-            head: $crate::Labeled::<$label>::new($value),
+            head: $crate::LabeledValue::<$label>::new($value),
             tail: Nil
         }
     );
     ($label:ty = $value:expr, $($rest:tt)*) => (
         $crate::Cons {
-            head: $crate::Labeled::<$label>::new($value),
+            head: $crate::LabeledValue::<$label>::new($value),
             tail: lhlist![$($rest)*]
         }
     );

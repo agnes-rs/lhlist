@@ -1,5 +1,5 @@
 use crate::cons::LVCons;
-use crate::label::{Label, Labeled};
+use crate::label::{Label, LabeledValue};
 use crate::relation::{True, False, LabelEq, Member};
 
 /// Lookup a specific element in a list by label.
@@ -48,7 +48,7 @@ impl<TargetL, L, T, TailMatch> LookupElemByLabelMatch<TargetL, True, TailMatch>
 where
     L: Label
 {
-    type Elem = Labeled<L>;
+    type Elem = LabeledValue<L>;
 
     fn elem(&self) -> &Self::Elem { &self.head }
 }
