@@ -79,6 +79,8 @@ where
         )
     }
     /// Creates an iterator which call a [MapFunc](trait.MapFunc.html) on each element.
+    ///
+    /// See [MapAdapter](struct.MapAdapter.html) for more information.
     pub fn map<F>(self, f: F) -> ConsIterator<'a, Cons<H, T>, Cons<MapAdapter<F>, A>>
     where
         F: MapFunc<<A as Adapter<&'a H>>::Output>
@@ -86,6 +88,8 @@ where
         ConsIterator::with_adapter(self.list, Cons { head: MapAdapter { f }, tail: self.adapter })
     }
     /// Collects this iterator into a new labeled heterogeneous list
+    ///
+    /// For an example of usage, see the [MapAdapter](struct.MapAdapter.html) example.
     pub fn collect_into_labeled_hlist<LabelList>(self)
         -> <Self as CollectIntoLabeledHList<LabelList>>::Output
     where
@@ -174,6 +178,8 @@ where
         )
     }
     /// Creates an iterator which call a [MapFunc](trait.MapFunc.html) on each element.
+    ///
+    /// See [MapAdapter](struct.MapAdapter.html) for more information.
     pub fn map<F>(self, f: F) -> ValuesIterator<'a, LVCons<L, T>, Cons<MapAdapter<F>, A>>
     where
         F: MapFunc<<A as Adapter<&'a L::AssocType>>::Output>
@@ -181,6 +187,8 @@ where
         ValuesIterator::with_adapter(self.list, Cons { head: MapAdapter { f }, tail: self.adapter })
     }
     /// Collects this iterator into a new labeled heterogeneous list
+    ///
+    /// For an example of usage, see the [MapAdapter](struct.MapAdapter.html) example.
     pub fn collect_into_labeled_hlist<LabelList>(self)
         -> <Self as CollectIntoLabeledHList<LabelList>>::Output
     where
@@ -220,7 +228,58 @@ where
 
 /// Function mapping iterator component.
 ///
-/// Transforms input using a function implementing [MapFunc](trait.MapFunc.html).
+/// Transforms input using a function implementing [MapFunc](trait.MapFunc.html). Created by calling
+/// the `map` method on a [ConsIterator](struct.ConsIterator.html#method.map) or
+/// [ValuesIterator](struct.ValuesIterator.html#method.map).
+///
+/// # Example
+///
+/// ```
+/// # #[macro_use] extern crate lhlist;
+/// use lhlist::*;
+/// use lhlist::iter::*;
+///
+/// # fn main() {
+/// // Create the labels
+/// #[label(type=Vec<usize>)]
+/// struct Label1;
+///
+/// #[label(type=Vec<&'static str>)]
+/// struct Label2;
+///
+/// #[label(type=Vec<f64>)]
+/// struct Label3;
+///
+/// // Instantiate the list
+/// let test_list = lhlist![
+///     Label1 = vec![8usize, 4, 1, 5, 2],
+///     Label2 = vec!["Hello", "World!"],
+///     Label3 = vec![0.4f64, -3.5, 3.5, 0.3],
+/// ];
+///
+/// // Define the mapped function
+/// struct CountFn;
+/// impl<T> MapFunc<&Vec<T>> for CountFn {
+///     type Output = usize;
+///     fn call(&mut self, vec: &Vec<T>) -> usize {
+///         vec.len()
+///     }
+/// }
+///
+/// // Apply the function
+/// let counts = test_list.iter_values().map(CountFn).collect_into_hlist();
+/// assert_eq!(counts, cons(5, cons(2, cons(4, Nil))));
+///
+/// // We can also get a labeled version, but first we have to define the target labels
+/// #[label(type=usize)] struct Label1Count;
+/// #[label(type=usize)] struct Label2Count;
+/// #[label(type=usize)] struct Label3Count;
+
+/// let counts = test_list.iter_values().map(CountFn)
+///     .collect_into_labeled_hlist::<Labels![Label1Count, Label2Count, Label3Count]>();
+/// assert_eq!(counts, lhlist![Label1Count=5, Label2Count=2, Label3Count=4]);
+/// # }
+/// ```
 #[derive(Debug)]
 pub struct MapAdapter<F> {
     f: F
@@ -250,6 +309,8 @@ pub trait MapFunc<T> {
 /// a [Cons](../struct.Cons.html)-list instead of an [LVCons](../type.LVCons.html)-list. See
 /// [CollectIntoLabeledHList](trait.CollectIntoLabeledHList.html) for a version that returns
 /// a labeled cons-list.
+///
+/// For an example of usage, see the [MapAdapter](struct.MapAdapter.html) example.
 pub trait CollectIntoHList {
     /// Output type of collected list
     type Output;
@@ -311,6 +372,8 @@ where
 /// The resulting cons-list will include added label information -- it typically returns
 /// an [LVCons](../struct.Cons.html)-list. For a collecting into non-labeled lists, see
 /// [CollectIntoHList](trait.CollectIntoHList.html).
+///
+/// For an example of usage, see the [MapAdapter](struct.MapAdapter.html) example.
 pub trait CollectIntoLabeledHList<LabelList> {
     /// Output type of collected list
     type Output;
