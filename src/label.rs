@@ -138,8 +138,66 @@ where
     type Labels = LCons<Lbl, Tail::Labels>;
 }
 
+/// Macro for easily creating a label struct.
+///
+/// There are two formats for calling this macro:
+/// ```
+/// # #[macro_use] extern crate lhlist;
+/// # fn main() {
+/// use lhlist::Label;
+/// new_label![MyLabel: Vec<u32>];
+/// assert_eq!(MyLabel::name(), "MyLabel");
+/// # }
+/// ```
+/// which provides a default name 'MyLabel' to the created label, and
+/// ```
+/// # #[macro_use] extern crate lhlist;
+/// # fn main() {
+/// use lhlist::Label;
+/// new_label![MyLabel("My Very Own Label"): Vec<u32>];
+/// assert_eq!(MyLabel::name(), "My Very Own Label");
+/// # }
+/// ```
+/// which supplies an explicit name.
+///
+/// Alternatively (and equivalently), you can use the `#[label(type=T)]` attribute format:
+/// ```
+/// # #[macro_use] extern crate lhlist;
+/// # fn main() {
+/// use lhlist::Label;
+///
+/// #[label(type=Vec<u32>)]
+/// struct MyLabel;
+/// assert_eq!(MyLabel::name(), "MyLabel");
+/// # }
+/// ```
+/// or
+/// ```
+/// # #[macro_use] extern crate lhlist;
+/// # fn main() {
+/// use lhlist::Label;
+///
+/// #[label(name="My Very Own Label", type=Vec<u32>)]
+/// struct MyLabel;
+/// assert_eq!(MyLabel::name(), "My Very Own Label");
+/// # }
+/// ```
+#[macro_export]
+macro_rules! new_label {
+    ($id:ident: $type:ty) => {
+        #[label(type=$type)]
+        struct $id;
+    };
+    ($id:ident($name:expr): $type:ty) => {
+        #[label(name=$name, type=$type)]
+        struct $id;
+    };
+}
 
 /// Macro for creating type signature for a [LCons](type.LCons.html) label-only cons-list.
+///
+/// This type signature can be useful for specifying a list of labels for methods and functions
+/// that require them.
 #[macro_export]
 macro_rules! Labels {
     () => ( $crate::Nil );
@@ -151,7 +209,7 @@ macro_rules! Labels {
     )
 }
 
-/// Macro for creating [LCons](type.LCons.html) label-only cons-lists.
+/// Macro for creating an instance of an [LCons](type.LCons.html) label-only cons-lists.
 #[macro_export]
 macro_rules! labels {
     () => ( $crate::Nil );
