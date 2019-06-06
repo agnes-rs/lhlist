@@ -1,5 +1,7 @@
 use typenum::Unsigned;
 
+use crate::cons::{Nil, LCons, LVCons};
+
 /// A trait with information about a label.
 ///
 /// Typically, labels are simply unit-like structs used to identify elements in a list. This trait
@@ -110,6 +112,33 @@ pub fn labeled_typearg<L>(value: L::AssocType) -> LabeledValue<L> where L: Label
     LabeledValue { value }
 }
 
+/// Trait for extracting the labels ([LCons](type.LCons.html)) from a cons-list of elements which
+/// all implement [Label](trait.Label.html).
+pub trait HasLabels {
+    /// Associated labels
+    type Labels;
+
+    /// Instantiates a cons-list only containing label information.
+    fn labels_only(&self) -> Self::Labels
+    where
+        Self::Labels: Default
+    {
+        Self::Labels::default()
+    }
+}
+
+impl HasLabels for Nil {
+    type Labels = Nil;
+}
+impl<Lbl, Tail> HasLabels for LVCons<Lbl, Tail>
+where
+    Lbl: Label,
+    Tail: HasLabels,
+{
+    type Labels = LCons<Lbl, Tail::Labels>;
+}
+
+
 /// Macro for creating type signature for a [LCons](type.LCons.html) label-only cons-list.
 #[macro_export]
 macro_rules! Labels {
@@ -161,24 +190,56 @@ macro_rules! lhlist {
 
 #[cfg(test)]
 mod tests {
+    use std::marker::PhantomData;
     use crate::*;
 
-    #[label(name = "My Label")]
-    struct Label1;
-
-    #[label(type=u8)]
-    struct Label2;
-
-    #[label]
-    struct Label3;
 
     #[test]
     fn label_create() {
+        #[label(name = "My Label")]
+        struct Label1;
+        #[label(type=u8)]
+        struct Label2;
+        #[label]
+        struct Label3;
+
         assert_eq!(Label1::name(), "My Label");
 
         assert_eq!(Label2::name(), "Label2");
         assert_eq!(<Label2 as Label>::AssocType::max_value(), 255u8);
 
         assert_eq!(Label3::name(), "Label3");
+    }
+
+    #[test]
+    fn has_labels() {
+        #[label(type=u8)]
+        struct Label1;
+        #[label(type=u16)]
+        struct Label2;
+        #[label(type=i16)]
+        struct Label3;
+        let test_list = lhlist![
+            Label1 = 2,
+            Label2 = 301,
+            Label3 = -523,
+        ];
+        let iter = test_list.iter();
+        let (item, iter) = iter.next();
+        assert_eq!(item, &labeled(Label1, 2));
+        let (item, iter) = iter.next();
+        assert_eq!(item, &labeled(Label2, 301));
+        let (item, _) = iter.next();
+        assert_eq!(item, &labeled(Label3, -523));
+
+
+        let labels_only = test_list.labels_only();
+        let iter = labels_only.iter();
+        let (item, iter) = iter.next();
+        assert_eq!(item, &PhantomData::<Label1>::default());
+        let (item, iter) = iter.next();
+        assert_eq!(item, &PhantomData::<Label2>::default());
+        let (item, _) = iter.next();
+        assert_eq!(item, &PhantomData::<Label3>::default());
     }
 }

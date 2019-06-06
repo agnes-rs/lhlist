@@ -34,6 +34,21 @@ pub type LVCons<Label, Tail> = Cons<LabeledValue<Label>, Tail>;
 /// A cons-list containing only labels.
 pub type LCons<Label, Tail> = Cons<PhantomData<Label>, Tail>;
 
+impl Default for Nil {
+    fn default() -> Nil { Nil }
+}
+impl<Lbl, Tail> Default for LCons<Lbl, Tail>
+where
+    Tail: Default
+{
+    fn default() -> LCons<Lbl, Tail> {
+        Cons {
+            head: PhantomData,
+            tail: Tail::default()
+        }
+    }
+}
+
 impl<Lbl, Tail> Cons<Lbl, Tail> where Lbl: Label {
     /// Returns `true` if target label exists in this list.
     ///
