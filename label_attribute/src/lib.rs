@@ -112,15 +112,19 @@ fn impl_label(
         None => quote! { () },
     };
 
+    let dummy_const = syn::Ident::new(&format!("_IMPL_LABEL_FOR_{}", name), pm2::Span::call_site());
+
     let generated = quote! {
         #(#attrs)*
         #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
         struct #name;
-        impl Label for #name {
-            const NAME: &'static str = #name_str;
-            type AssocType = #assoc_type;
-            type Uid = #id_ty;
-        }
+        const #dummy_const: () = {
+            impl Label for #name {
+                const NAME: &'static str = #name_str;
+                type AssocType = #assoc_type;
+                type Uid = #id_ty;
+            }
+        };
     };
     generated.into()
 }
