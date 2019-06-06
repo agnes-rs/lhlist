@@ -7,6 +7,42 @@ use crate::cons::{Cons, LCons, LVCons, Nil};
 use crate::label::{Label, Labeled};
 
 /// An iterator over a heterogeneous cons-list ([Cons](../struct.Cons.html));
+///
+/// For a version that iterates over only the values of a labeled cons-list
+/// ([LVCons](../type.LVCons.html)), see [ValuesIterator](struct.ValuesIterator.html).
+/// ## Example
+///
+/// This example demonstrates building and iterating over the `Labeled` values of a heterogeneous
+/// cons-list.
+/// ```
+/// # #[macro_use] extern crate lhlist;
+/// use lhlist::{Label, labeled};
+///
+/// # fn main() {
+/// #[label(type=Vec<usize>)]
+/// struct Label1;
+///
+/// #[label(type=Vec<&'static str>)]
+/// struct Label2;
+///
+/// #[label(type=Vec<f64>)]
+/// struct Label3;
+///
+/// let test_list = lhlist![
+///     Label1 = vec![8usize, 4, 1, 5, 2],
+///     Label2 = vec!["Hello", "World!"],
+///     Label3 = vec![0.4f64, -3.5, 3.5, 0.3],
+/// ];
+/// let iter = test_list.iter();
+///
+/// let (item, iter) = iter.next();
+/// assert_eq!(item, &labeled(Label1, vec![8usize, 4, 1, 5, 2]));
+/// let (item, iter) = iter.next();
+/// assert_eq!(item, &labeled(Label2, vec!["Hello", "World!"]));
+/// let (item, _) = iter.next();
+/// assert_eq!(item, &labeled(Label3, vec![0.4f64, -3.5, 3.5, 0.3]));
+/// # }
+/// ```
 #[derive(Debug)]
 pub struct ConsIterator<'a, List, A=Nil> {
     list: &'a List,
@@ -63,6 +99,42 @@ where
 /// An iterator over a labeled heterogeneous cons-list ([LVCons](../type.LVCons.html)) that only
 /// provides access to the contained values (as opposed to the [Labeled](../struct.Labeled.html)
 /// object).
+///
+/// For a version that iterates over a cons-list ([Cons](../struct.Cons.html)) without stripping
+/// labeled information, see [ConsIterator](struct.ConsIterator.html).
+/// ## Example
+///
+/// This example demonstrates building and iterating over the values of a labeled heterogeneous
+/// cons-list.
+/// ```
+/// # #[macro_use] extern crate lhlist;
+/// use lhlist::Label;
+///
+/// # fn main() {
+/// #[label(type=Vec<usize>)]
+/// struct Label1;
+///
+/// #[label(type=Vec<&'static str>)]
+/// struct Label2;
+///
+/// #[label(type=Vec<f64>)]
+/// struct Label3;
+///
+/// let test_list = lhlist![
+///     Label1 = vec![8usize, 4, 1, 5, 2],
+///     Label2 = vec!["Hello", "World!"],
+///     Label3 = vec![0.4f64, -3.5, 3.5, 0.3],
+/// ];
+/// let iter = test_list.iter_values();
+///
+/// let (item, iter) = iter.next();
+/// assert_eq!(item, &vec![8usize, 4, 1, 5, 2]);
+/// let (item, iter) = iter.next();
+/// assert_eq!(item, &vec!["Hello", "World!"]);
+/// let (item, _) = iter.next();
+/// assert_eq!(item, &vec![0.4f64, -3.5, 3.5, 0.3]);
+/// # }
+/// ```
 #[derive(Debug)]
 pub struct ValuesIterator<'a, List, A=Nil> {
     list: &'a List,
@@ -307,37 +379,17 @@ mod tests {
     use crate::*;
     use crate::iter::*;
 
-    #[label(type=Vec<usize>)]
-    struct Label1;
-
-    #[label(type=Vec<&'static str>)]
-    struct Label2;
-
-    #[label(type=Vec<f64>)]
-    struct Label3;
-
-    #[test]
-    fn iterate() {
-        let test_list = lhlist![
-            Label1 = vec![8usize, 4, 1, 5, 2],
-            Label2 = vec!["Hello", "World!"],
-            Label3 = vec![0.4f64, -3.5, 3.5, 0.3],
-        ];
-
-        let iter = test_list.iter_values();
-
-        let (item, iter) = iter.next();
-        assert_eq!(item, &vec![8usize, 4, 1, 5, 2]);
-
-        let (item, iter) = iter.next();
-        assert_eq!(item, &vec!["Hello", "World!"]);
-
-        let (item, _) = iter.next();
-        assert_eq!(item, &vec![0.4f64, -3.5, 3.5, 0.3]);
-    }
-
     #[test]
     fn map() {
+        #[label(type=Vec<usize>)]
+        struct Label1;
+
+        #[label(type=Vec<&'static str>)]
+        struct Label2;
+
+        #[label(type=Vec<f64>)]
+        struct Label3;
+
         let test_list = lhlist![
             Label1 = vec![8usize, 4, 1, 5, 2],
             Label2 = vec!["Hello", "World!"],

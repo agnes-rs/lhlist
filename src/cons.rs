@@ -60,6 +60,8 @@ impl<Lbl, Tail> Cons<Lbl, Tail> where Lbl: Label {
 
     /// Returns a iterator over this labeled cons-list which iterates over the lists' values (i.e.
     /// object of type `Value`).
+    ///
+    /// See [ValuesIterator](iter/struct.ValuesIterator.html) for an example.
     pub fn iter_values<'a>(&'a self) -> ValuesIterator<'a, Self> {
         ValuesIterator::new(self)
     }
@@ -74,6 +76,8 @@ impl Nil {
     pub fn has_label_typearg<TargetL>(&self) -> bool { false }
 
     /// Returns an empty [ConsIterator](iter/struct.ConsIterator.html).
+    ///
+    /// See [ConsIterator](iter/struct.ConsIterator.html) for an example.
     pub fn iter<'a>(&'a self) -> ConsIterator<'a, Self> {
         ConsIterator::new(self)
     }
