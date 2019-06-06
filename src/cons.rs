@@ -18,6 +18,30 @@ pub struct Cons<H, T> {
 }
 
 /// Create a new cons-list.
+///
+/// Typically, it's easier to use the [cons!](macro.cons.html) macro for cons-list creation:
+/// `cons![8, "Hi", 4.3]` is equivalent to `cons(8, cons("Hi", cons(4.3, Nil)))`.
+///
+/// # Example
+///
+/// ```
+/// use lhlist::{cons, Cons, Nil};
+/// let list = cons(8, cons("Hello!!!", cons(4.3, Nil)));
+/// assert_eq!(list, cons![8, "Hello!!!", 4.3]);
+/// assert_eq!(
+///     list,
+///     Cons {
+///         head: 8,
+///         tail: Cons {
+///             head: "Hello!!!",
+///             tail: Cons {
+///                 head: 4.3,
+///                 tail: Nil
+///             }
+///         }
+///     }
+/// );
+/// ```
 pub fn cons<H, T>(head: H, tail: T) -> Cons<H, T> {
     Cons { head, tail }
 }
@@ -99,5 +123,66 @@ impl Nil {
     /// Returns an empty [ValuesIterator](iter/struct.ValuesIterator.html).
     pub fn iter_values<'a>(&'a self) -> ValuesIterator<'a, Self> {
         ValuesIterator::new(self)
+    }
+}
+
+/// Macro for creation a [Cons](struct.Cons.html)-list.
+///
+/// # Example
+///
+/// ```
+/// # #[macro_use] extern crate lhlist;
+///
+/// # fn main() {
+/// let list = cons![8, "Hello!", 4.5];
+///
+/// let iter = list.iter();
+/// let (item, iter) = iter.next();
+/// assert_eq!(item, &8);
+/// let (item, iter) = iter.next();
+/// assert_eq!(item, &"Hello!");
+/// let (item, _) = iter.next();
+/// assert_eq!(item, &4.5);
+/// # }
+/// ```
+#[macro_export]
+macro_rules! cons {
+    () => ( $crate::Nil );
+    ($value:expr) => (
+        $crate::cons($value, $crate::Nil)
+    );
+    ($value:expr, $($rest:tt)*) => (
+        $crate::cons($value, cons![$($rest)*])
+    );
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::*;
+
+    #[test]
+    fn cons_macro() {
+        let list = cons![];
+        assert_eq![list, Nil];
+
+        let list = cons![8usize,];
+        assert_eq![list, cons(8usize, Nil)];
+
+        let list = cons![8usize, "Hello!!!"];
+        assert_eq![list, cons(8usize, cons("Hello!!!", Nil))];
+
+        let list = cons![8usize, "Hello!!!", 5.3];
+        assert_eq![list, cons(8usize, cons("Hello!!!", cons(5.3, Nil)))];
+        assert_eq![list,
+            Cons {
+                head: 8usize,
+                tail: Cons {
+                    head: "Hello!!!",
+                    tail: Cons {
+                        head: 5.3,
+                        tail: Nil
+                    }
+                }
+            }];
     }
 }
