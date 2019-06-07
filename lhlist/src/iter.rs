@@ -241,14 +241,11 @@ where
 ///
 /// # fn main() {
 /// // Create the labels
-/// #[label(type=Vec<usize>)]
-/// struct Label1;
+/// new_label![Label1: Vec<usize>];
 ///
-/// #[label(type=Vec<&'static str>)]
-/// struct Label2;
+/// new_label![Label2: Vec<&'static str>];
 ///
-/// #[label(type=Vec<f64>)]
-/// struct Label3;
+/// new_label![Label3: Vec<f64>];
 ///
 /// // Instantiate the list
 /// let test_list = lhlist![
@@ -268,12 +265,12 @@ where
 ///
 /// // Apply the function
 /// let counts = test_list.iter_values().map(CountFn).collect_into_hlist();
-/// assert_eq!(counts, cons(5, cons(2, cons(4, Nil))));
+/// assert_eq!(counts, cons![5, 2, 4]);
 ///
 /// // We can also get a labeled version, but first we have to define the target labels
-/// #[label(type=usize)] struct Label1Count;
-/// #[label(type=usize)] struct Label2Count;
-/// #[label(type=usize)] struct Label3Count;
+/// new_label![Label1Count: usize];
+/// new_label![Label2Count: usize];
+/// new_label![Label3Count: usize];
 
 /// let counts = test_list.iter_values().map(CountFn)
 ///     .collect_into_labeled_hlist::<Labels![Label1Count, Label2Count, Label3Count]>();
@@ -504,16 +501,11 @@ mod tests {
             .collect_into_labeled_hlist::<Labels![Label1Result, Label2Result, Label3Result]>();
         assert_eq!(
             result,
-            cons(
-                labeled(Label1Result, 25),
-                cons(
-                    labeled(Label2Result, 16),
-                    cons(
-                        labeled(Label3Result, 9),
-                        Nil
-                    )
-                )
-            )
+            lhlist![
+                Label1Result = 25,
+                Label2Result = 16,
+                Label3Result = 9,
+            ]
         );
     }
 }

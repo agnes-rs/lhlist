@@ -7,58 +7,9 @@ use crate::cons::{Nil, LCons, LVCons};
 /// Typically, labels are simply unit-like structs used to identify elements in a list. This trait
 /// contains the label's name, an associated type, and an internal identifier.
 ///
-/// It is encouraged that this trait be implemented using `#[label]`, which ensures that the
-/// identifier `Uid` is unique.
-///
-/// ## Examples
-/// Basic label creation. The label's name is set to the identifier name.
-/// ```
-/// # #[macro_use] extern crate lhlist;
-///
-/// # fn main() {
-/// use lhlist::Label;
-///
-/// #[label]
-/// struct MyLabel;
-///
-/// assert_eq!(MyLabel::name(), "MyLabel");
-/// # }
-/// ```
-///
-/// You can provide a custom name by passing `name="Label Name"`.
-/// ```
-/// # #[macro_use] extern crate lhlist;
-///
-/// # fn main() {
-/// use lhlist::Label;
-///
-/// #[label(name="My Fantastic Label")]
-/// struct MyLabel;
-///
-/// assert_eq!(MyLabel::name(), "My Fantastic Label");
-/// # }
-/// ```
-///
-/// You can provide the associated type (which otherwise is defaulted to `()`) by using either
-/// `type=<type>` or `assoc_type=<type>`.
-/// ```
-/// # #[macro_use] extern crate lhlist;
-///
-/// # fn main() {
-/// use lhlist::Label;
-///
-/// #[label(name="My Amazing Label", assoc_type=u8)]
-/// struct MyLabel;
-///
-/// assert_eq!(MyLabel::name(), "My Amazing Label");
-/// assert_eq!(<MyLabel as Label>::AssocType::max_value(), u8::max_value());
-///
-/// #[label(type=u32)]
-/// struct MyOtherLabel;
-///
-/// assert_eq!(MyOtherLabel::name(), "MyOtherLabel");
-/// assert_eq!(<MyOtherLabel as Label>::AssocType::max_value(), u32::max_value());
-/// # }
+/// It is encouraged that this trait be implemented using the [new_label](macro.new_label.html)
+/// macro or the `#[label]` attribute, which ensures that the identifier `Uid` is unique. See the
+/// documentation for [new_label](macro.new_label.html) for examples.
 /// ```
 pub trait Label {
     /// Name of this label (for display /output)
@@ -140,50 +91,52 @@ where
 
 /// Macro for easily creating a label struct.
 ///
-/// There are two formats for calling this macro:
+/// There are three formats for calling this macro:
 /// ```
 /// # #[macro_use] extern crate lhlist;
 /// # fn main() {
 /// use lhlist::Label;
-/// new_label![MyLabel: Vec<u32>];
-/// assert_eq!(MyLabel::name(), "MyLabel");
-/// # }
-/// ```
-/// which provides a default name 'MyLabel' to the created label, and
-/// ```
-/// # #[macro_use] extern crate lhlist;
-/// # fn main() {
-/// use lhlist::Label;
-/// new_label![MyLabel("My Very Own Label"): Vec<u32>];
-/// assert_eq!(MyLabel::name(), "My Very Own Label");
-/// # }
-/// ```
-/// which supplies an explicit name.
 ///
-/// Alternatively (and equivalently), you can use the `#[label(type=T)]` attribute format:
+/// // default name (variable name), nil associated type `()`
+/// new_label![MyLabel1];
+/// assert_eq!(MyLabel1::name(), "MyLabel1");
+///
+/// // default name (variable name) with associated type
+/// new_label![MyLabel2: u8];
+/// assert_eq!(MyLabel2::name(), "MyLabel2");
+/// assert_eq!(<MyLabel2 as Label>::AssocType::max_value(), u8::max_value());
+///
+/// new_label![MyLabel3("My Custom Label"): u16];
+/// assert_eq!(MyLabel3::name(), "My Custom Label");
+/// assert_eq!(<MyLabel3 as Label>::AssocType::max_value(), u16::max_value());
+/// # }
+/// ```
+///
+/// Alternatively (and equivalently), you can use the `#[label(type=T, name="Name")]`
+/// attribute format:
 /// ```
 /// # #[macro_use] extern crate lhlist;
 /// # fn main() {
 /// use lhlist::Label;
+/// #[label]
+/// struct MyLabel1;
+/// assert_eq!(MyLabel1::name(), "MyLabel1");
 ///
 /// #[label(type=Vec<u32>)]
-/// struct MyLabel;
-/// assert_eq!(MyLabel::name(), "MyLabel");
-/// # }
-/// ```
-/// or
-/// ```
-/// # #[macro_use] extern crate lhlist;
-/// # fn main() {
-/// use lhlist::Label;
+/// struct MyLabel2;
+/// assert_eq!(MyLabel2::name(), "MyLabel2");
 ///
-/// #[label(name="My Very Own Label", type=Vec<u32>)]
-/// struct MyLabel;
-/// assert_eq!(MyLabel::name(), "My Very Own Label");
+/// #[label(name="My Custom Label", type=Vec<u32>)]
+/// struct MyLabel3;
+/// assert_eq!(MyLabel3::name(), "My Custom Label");
 /// # }
 /// ```
 #[macro_export]
 macro_rules! new_label {
+    ($id:ident) => {
+        #[label]
+        struct $id;
+    };
     ($id:ident: $type:ty) => {
         #[label(type=$type)]
         struct $id;
