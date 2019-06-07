@@ -251,14 +251,13 @@ mod tests {
     use std::marker::PhantomData;
     use crate::*;
 
-
     #[test]
     fn label_create() {
-        #[label(name = "My Label")]
+        #[label(name = "My Label", crate=crate)]
         struct Label1;
-        #[label(type=u8)]
+        #[label(type=u8, crate=crate)]
         struct Label2;
-        #[label]
+        #[label(crate=crate)]
         struct Label3;
 
         assert_eq!(Label1::name(), "My Label");
@@ -271,11 +270,11 @@ mod tests {
 
     #[test]
     fn has_labels() {
-        #[label(type=u8)]
+        #[label(type=u8, crate=crate)]
         struct Label1;
-        #[label(type=u16)]
+        #[label(type=u16, crate=crate)]
         struct Label2;
-        #[label(type=i16)]
+        #[label(type=i16, crate=crate)]
         struct Label3;
         let test_list = lhlist![
             Label1 = 2,

@@ -9,6 +9,7 @@ default = ["extra-traits"]
 extra-traits = []
 
 [lib]
+name = "label_attribute"
 proc-macro = true
 
 [dependencies]

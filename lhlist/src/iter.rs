@@ -444,13 +444,13 @@ mod tests {
 
     #[test]
     fn map() {
-        #[label(type=Vec<usize>)]
+        #[label(type=Vec<usize>, crate=crate)]
         struct Label1;
 
-        #[label(type=Vec<&'static str>)]
+        #[label(type=Vec<&'static str>, crate=crate)]
         struct Label2;
 
-        #[label(type=Vec<f64>)]
+        #[label(type=Vec<f64>, crate=crate)]
         struct Label3;
 
         let test_list = lhlist![
@@ -496,9 +496,9 @@ mod tests {
         let result = test_list.iter_values().map(DoStuff).map(DoStuff2).collect_into_hlist();
         assert_eq!(result, cons(25, cons(16, cons(9, Nil))));
 
-        #[label(type=usize)] struct Label1Result;
-        #[label(type=usize)] struct Label2Result;
-        #[label(type=usize)] struct Label3Result;
+        #[label(type=usize, crate=crate)] struct Label1Result;
+        #[label(type=usize, crate=crate)] struct Label2Result;
+        #[label(type=usize, crate=crate)] struct Label3Result;
 
         let result = test_list.iter_values().map(DoStuff).map(DoStuff2)
             .collect_into_labeled_hlist::<Labels![Label1Result, Label2Result, Label3Result]>();

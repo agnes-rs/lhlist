@@ -31,6 +31,7 @@ impl Parse for LabelStruct {
 enum LabelMeta {
     CustomName(pm2::Literal),
     AssocType(syn::Type),
+    CratePath(syn::Path),
 }
 
 impl Parse for LabelMeta {
@@ -39,6 +40,9 @@ impl Parse for LabelMeta {
         let (span, meta_name_str) = if lookahead.peek(Token![type]) {
             let tok: Token![type] = input.parse()?;
             (tok.span, "type".to_string())
+        } else if lookahead.peek(Token![crate]) {
+            let tok: Token![crate] = input.parse()?;
+            (tok.span, "crate".to_string())
         } else {
             let meta_name: syn::Ident = input.parse()?;
             (meta_name.span(), meta_name.to_string())
@@ -46,15 +50,15 @@ impl Parse for LabelMeta {
         let _: Token![=] = input.parse()?;
 
         const LABEL_NAME_ID: &str = "name";
+        const CRATE_ID: &str = "crate";
         const TYPE_IDS: [&str; 2] = ["type", "assoc_type"];
 
-        if meta_name_str == LABEL_NAME_ID {
-            input.parse().map(LabelMeta::CustomName)
-        } else if TYPE_IDS.contains(&&meta_name_str[..]) {
-            input.parse().map(LabelMeta::AssocType)
-        } else {
-            Err(syn::Error::new(span,
-                format!["expected {}, or {}", TYPE_IDS.join(", "), meta_name_str]))
+        match &meta_name_str[..] {
+            LABEL_NAME_ID => input.parse().map(LabelMeta::CustomName),
+            CRATE_ID => input.parse().map(LabelMeta::CratePath),
+            s if TYPE_IDS.contains(&s) => input.parse().map(LabelMeta::AssocType),
+            _ => Err(syn::Error::new(span, format!["expected {}, {}, or {}",
+                    TYPE_IDS.join(", "), CRATE_ID, LABEL_NAME_ID]))
         }
     }
 }
@@ -63,16 +67,18 @@ impl Parse for LabelMeta {
 struct LabelOptions {
     name: Option<pm2::Literal>,
     assoc_type: Option<syn::Type>,
+    crate_path: Option<syn::Path>,
 }
 
 impl Parse for LabelOptions {
     fn parse(input: ParseStream) -> parse::Result<Self> {
         let metas: Punctuated<_, Token![,]> = input.parse_terminated(LabelMeta::parse)?;
-        let mut opts = LabelOptions { name: None, assoc_type: None };
+        let mut opts = LabelOptions { name: None, assoc_type: None, crate_path: None };
         for meta in &metas {
             match meta {
                 LabelMeta::CustomName(name) => { opts.name = Some(name.clone()); },
                 LabelMeta::AssocType(ty) => { opts.assoc_type = Some(ty.clone()); },
+                LabelMeta::CratePath(path) => { opts.crate_path = Some(path.clone()); }
             }
         }
         Ok(opts)
@@ -113,13 +119,22 @@ fn impl_label(
     };
 
     let dummy_const = syn::Ident::new(&format!("_IMPL_LABEL_FOR_{}", name), pm2::Span::call_site());
+    let use_lhlist = match label_options.crate_path {
+        Some(ref path) => quote! {
+            use #path as _lhlist;
+        },
+        None => quote! {
+            extern crate lhlist as _lhlist;
+        }
+    };
 
     let generated = quote! {
         #(#attrs)*
         #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
         struct #name;
         const #dummy_const: () = {
-            impl Label for #name {
+            #use_lhlist
+            impl _lhlist::Label for #name {
                 const NAME: &'static str = #name_str;
                 type AssocType = #assoc_type;
                 type Uid = #id_ty;

@@ -70,13 +70,13 @@ where
 mod tests {
     use crate::*;
 
-    #[label(name="My Label", type=String)]
+    #[label(name="My Label", type=String, crate=crate)]
     struct Label1;
 
-    #[label(type=u8)]
+    #[label(type=u8, crate=crate)]
     struct Label2;
 
-    #[label]
+    #[label(crate=crate)]
     struct Label3;
 
     #[test]
