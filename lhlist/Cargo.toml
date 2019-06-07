@@ -1,0 +1,10 @@
+[package]
+name = "lhlist"
+description = "Labeled heterogeneous lists"
+version = "0.1.0"
+authors = ["Jamie Blondin <jblondin@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+label_attribute = { path = "../label_attribute" }
+typenum = "1.10.0"
