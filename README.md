@@ -7,7 +7,7 @@
 
 This library provides data structures and macros for creating and accessing lists of differently-typed objects that each have their own unique label.
 
-For more details, see the [documentation](https://docs.rs/lhlist).
+For more details, see the [documentation](https://docs.rs/lhlist/).
 
 ## Usage
 
