@@ -63,6 +63,21 @@ pub fn labeled_typearg<L>(value: L::AssocType) -> LabeledValue<L> where L: Label
     LabeledValue { value }
 }
 
+/// A trait that provides access to contained 'values'.
+pub trait Value {
+    /// The type of the contained value.
+    type Output: ?Sized;
+    /// Immutable reference to the contained value
+    fn value_ref(&self) -> &Self::Output;
+    /// Mutable reference to the contained value
+    fn value_mut(&mut self) -> &mut Self::Output;
+}
+impl<L> Value for LabeledValue<L> where L: Label {
+    type Output = L::AssocType;
+    fn value_ref(&self) -> &Self::Output { &self.value }
+    fn value_mut(&mut self) -> &mut Self::Output { &mut self.value }
+}
+
 /// Trait for extracting the labels ([LCons](type.LCons.html)) from a cons-list of elements which
 /// all implement [Label](trait.Label.html).
 pub trait HasLabels {

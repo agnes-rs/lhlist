@@ -61,7 +61,7 @@ mod cons;
 pub use cons::{Nil, cons, Cons, LCons, LVCons};
 
 mod label;
-pub use label::{HasLabels, Label, LabeledValue, labeled, labeled_typearg};
+pub use label::{HasLabels, Label, LabeledValue, labeled, labeled_typearg, Value};
 
 mod relation;
 pub use relation::{True, False, Bool, ToBool, LabelEq, Member};

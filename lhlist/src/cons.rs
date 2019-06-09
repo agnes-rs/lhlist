@@ -1,7 +1,9 @@
+use std::ops::{Index, IndexMut};
 use std::marker::PhantomData;
 
-use crate::label::{Label, LabeledValue};
 use crate::iter::{ConsIterator, ValuesIterator};
+use crate::label::{Label, LabeledValue, Value};
+use crate::lookup::{LookupElemByLabel, LookupElemByLabelMut};
 use crate::relation::{Bool, Member};
 
 /// The end of a heterogeneous list.
@@ -73,11 +75,11 @@ where
     }
 }
 
-impl<Lbl, Tail> Cons<Lbl, Tail> where Lbl: Label {
+impl<Head, Tail> Cons<Head, Tail> where Head: Label {
     /// Returns `true` if target label exists in this list.
     ///
     /// Convenience function for calling
-    /// [has_label_typearg](type.LVCons.html#method.has_label_typearg)
+    /// [has_label_typearg](struct.Cons.html#method.has_label_typearg)
     /// without needing to specify type argument. Calling `list.has_label(ExampleLabel)` is
     /// equivalent to `list.has_label_typearg::<ExampleLabel>())`.
     pub fn has_label<TargetL>(&self, _target_label: TargetL) -> bool
@@ -104,6 +106,134 @@ impl<Lbl, Tail> Cons<Lbl, Tail> where Lbl: Label {
     pub fn iter_values<'a>(&'a self) -> ValuesIterator<'a, Self> {
         ValuesIterator::new(self)
     }
+
+    /// Returns a reference the element labeled by a specific label.
+    ///
+    /// # Example
+    /// ```
+    /// #[macro_use] extern crate lhlist;
+    /// use lhlist::labeled;
+    /// # fn main() {
+    /// new_label![Label1: u8];
+    /// new_label![Label2: i8];
+    /// new_label![Label3: bool];
+    /// let list = lhlist![
+    ///     Label1 = 9,
+    ///     Label2 = -4,
+    ///     Label3 = true,
+    /// ];
+    /// // assert_eq!(list[Label1], labeled(Label1, 9));
+    /// assert_eq!(list.elem::<Label1>(), &labeled(Label1, 9));
+    /// // assert_eq!(list[Label2], labeled(Label2, -4));
+    /// assert_eq!(list.elem::<Label2>(), &labeled(Label2, -4));
+    /// // assert_eq!(list[Label3], labeled(Label3, true));
+    /// assert_eq!(list.elem::<Label3>(), &labeled(Label3, true));
+    /// # }
+    /// ```
+    pub fn elem<TargetL>(&self) -> &<Self as LookupElemByLabel<TargetL>>::Elem
+    where
+        Self: LookupElemByLabel<TargetL>
+    {
+        LookupElemByLabel::<TargetL>::elem(self)
+    }
+
+    /// Returns a mutable reference the element labeled by a specific label.
+    ///
+    /// This is equivalent to using index `list[Label]` notation in a mutable context.
+    ///
+    /// # Example
+    ///
+
+    pub fn elem_mut<TargetL>(&mut self) -> &mut <Self as LookupElemByLabel<TargetL>>::Elem
+    where
+        Self: LookupElemByLabelMut<TargetL>
+    {
+        LookupElemByLabelMut::<TargetL>::elem_mut(self)
+    }
+
+    /// Returns a reference the value (e.g. the value portion of a
+    /// [LabeledValue](struct.LabeledValue.html)) labeled by a specific label.
+    ///
+    /// This is equivalent to using index `list[Label]` notation, with the exception that `value`
+    /// also works for transient (non-`'static`) types.
+    ///
+    /// # Example
+    ///
+    ///
+    /// ```
+    /// #[macro_use] extern crate lhlist;
+    /// # fn main() {
+    /// new_label![Label1: u8];
+    /// new_label![Label2: i8];
+    /// new_label![Label3: bool];
+    /// let list = lhlist![
+    ///     Label1 = 9,
+    ///     Label2 = -4,
+    ///     Label3 = true,
+    /// ];
+    /// assert_eq!(list[Label1], 9);
+    /// assert_eq!(list.value::<Label1>(), &9);
+    /// assert_eq!(list[Label2], -4);
+    /// assert_eq!(list.value::<Label2>(), &-4);
+    /// assert_eq!(list[Label3], true);
+    /// assert_eq!(list.value::<Label3>(), &true);
+    /// # }
+    /// ```
+    pub fn value<'a, TargetL>(&'a self)
+        -> &'a <<Self as LookupElemByLabel<TargetL>>::Elem as Value>::Output
+    where
+        Self: LookupElemByLabel<TargetL>,
+        <Self as LookupElemByLabel<TargetL>>::Elem: 'a + Value,
+    {
+        LookupElemByLabel::<TargetL>::elem(self).value_ref()
+    }
+
+    /// Returns a mutable reference the value (e.g. the value portion of a
+    /// [LabeledValue](struct.LabeledValue.html)) labeled by a specific label.
+    ///
+    /// This is equivalent to using index `list[Label]` notation in `mut` contexts, with the
+    /// exception that `value_mut` also works for transient (non-`'static`) types.
+    ///
+    /// # Example
+    ///
+    ///
+    /// ```
+    /// #[macro_use] extern crate lhlist;
+    /// # fn main() {
+    /// new_label![Label1: u8];
+    /// new_label![Label2: i8];
+    /// new_label![Label3: bool];
+    /// let mut list = lhlist![
+    ///     Label1 = 9,
+    ///     Label2 = -4,
+    ///     Label3 = true,
+    /// ];
+    ///
+    /// let value2 = list.value_mut::<Label2>();
+    /// assert_eq!(value2, &mut -4);
+    /// *value2 = -9;
+    /// assert_eq!(list, lhlist![
+    ///     Label1 = 9,
+    ///     Label2 = -9,
+    ///     Label3 = true,
+    /// ]);
+    ///
+    /// list[Label3] = false;
+    /// assert_eq!(list, lhlist![
+    ///     Label1 = 9,
+    ///     Label2 = -9,
+    ///     Label3 = false,
+    /// ]);
+    /// # }
+    /// ```
+    pub fn value_mut<'a, TargetL>(&'a mut self)
+        -> &'a mut <<Self as LookupElemByLabel<TargetL>>::Elem as Value>::Output
+    where
+        Self: LookupElemByLabelMut<TargetL>,
+        <Self as LookupElemByLabel<TargetL>>::Elem: 'a + Value,
+    {
+        LookupElemByLabelMut::<TargetL>::elem_mut(self).value_mut()
+    }
 }
 
 impl Nil {
@@ -125,6 +255,29 @@ impl Nil {
         ValuesIterator::new(self)
     }
 }
+
+impl<L, H, T> Index<L> for Cons<H, T>
+where
+    Cons<H, T>: LookupElemByLabel<L>,
+    <Cons<H, T> as LookupElemByLabel<L>>::Elem: 'static + Value,
+{
+    type Output = <<Cons<H, T> as LookupElemByLabel<L>>::Elem as Value>::Output;
+
+    fn index(&self, _index: L) -> &Self::Output {
+        LookupElemByLabel::<L>::elem(self).value_ref()
+    }
+}
+
+impl<L, H, T> IndexMut<L> for Cons<H, T>
+where
+    Cons<H, T>: LookupElemByLabelMut<L>,
+    <Cons<H, T> as LookupElemByLabel<L>>::Elem: 'static + Value,
+{
+    fn index_mut(&mut self, _index: L) -> &mut Self::Output {
+        LookupElemByLabelMut::<L>::elem_mut(self).value_mut()
+    }
+}
+
 
 /// Macro for creation a [Cons](struct.Cons.html)-list.
 ///
