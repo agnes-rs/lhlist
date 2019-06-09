@@ -1,6 +1,6 @@
 use typenum::Unsigned;
 
-use crate::cons::{Nil, LCons, LVCons};
+use crate::cons::{Cons, Nil, Len, LCons, LVCons};
 
 /// A trait with information about a label.
 ///
@@ -102,6 +102,61 @@ where
     Tail: HasLabels,
 {
     type Labels = LCons<Lbl, Tail::Labels>;
+}
+
+/// Generate a `Vec` containing the names of the labels in a labeled cons-list.
+///
+/// ## Example
+/// ```
+/// # #[macro_use] extern crate lhlist;
+/// use lhlist::StrLabels;
+/// # fn main() {
+/// new_label![MyLabel1];
+/// new_label![MyLabel2];
+/// new_label![MyLabel3];
+///
+/// let list = lhlist![MyLabel1 = (), MyLabel2 = (), MyLabel3 = ()];
+/// assert_eq!(list.labels(), vec!["MyLabel1", "MyLabel2", "MyLabel3"]);
+/// # }
+/// ```
+pub trait StrLabels {
+    /// Generates the label name `Vec`
+    fn static_labels() -> Vec<&'static str>;
+    /// Generates the label name `Vec` using a value
+    fn labels(&self) -> Vec<&'static str> { Self::static_labels() }
+}
+impl StrLabels for Nil {
+    fn static_labels() -> Vec<&'static str> {vec![] }
+}
+impl<Lbl: Sized, Tail> StrLabels for Cons<Lbl, Tail>
+where
+    Self: Len + BuildStrLabels
+{
+    fn static_labels() -> Vec<&'static str> {
+        let mut output = vec![""; Self::LEN];
+        Self::build_labels(&mut output, 0);
+        output
+    }
+}
+
+pub trait BuildStrLabels {
+    fn build_labels(v: &mut Vec<&'static str>, idx: usize);
+}
+impl BuildStrLabels for Nil {
+    fn build_labels(v: &mut Vec<&'static str>, idx: usize) {
+        debug_assert![idx == v.len()];
+    }
+}
+impl<Lbl, Tail> BuildStrLabels for Cons<Lbl, Tail>
+where
+    Lbl: Label,
+    Tail: BuildStrLabels
+{
+    fn build_labels(v: &mut Vec<&'static str>, idx: usize) {
+        debug_assert![idx < v.len()];
+        v[idx] = Lbl::NAME;
+        Tail::build_labels(v, idx + 1);
+    }
 }
 
 /// Macro for easily creating a label struct.
