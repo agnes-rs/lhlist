@@ -101,8 +101,8 @@ where
 
 
 /// An iterator over a labeled heterogeneous cons-list ([LVCons](../type.LVCons.html)) that only
-/// provides access to the contained values (as opposed to the [Labeled](../struct.Labeled.html)
-/// object).
+/// provides access to the contained values (as opposed to the
+/// [LabeledValue](../struct.LabeledValue.html) object).
 ///
 /// For a version that iterates over a cons-list ([Cons](../struct.Cons.html)) without stripping
 /// labeled information, see [ConsIterator](struct.ConsIterator.html).
