@@ -1,7 +1,7 @@
 # `lhlist`
 
 [![Build Status](https://travis-ci.org/agnes-rs/lhlist.svg?branch=master)](https://travis-ci.org/agnes-rs/lhlist)
-[![Documentation](https://docs.rs/lhlist/badge.svg)](https://docs.rs/lhlist)
+[![Documentation](https://docs.rs/lhlist/badge.svg)](https://docs.rs/lhlist/)
 
 `lhlist` is a library for **L**abeled **H**etergogeneous **List**s.
 
