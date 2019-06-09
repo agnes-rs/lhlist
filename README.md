@@ -1,5 +1,8 @@
 # `lhlist`
 
+[![Build Status](https://travis-ci.org/agnes-rs/lhlist.svg?branch=master)](https://travis-ci.org/agnes-rs/lhlist)
+[![Documentation](https://docs.rs/lhlist/badge.svg)](https://docs.rs/lhlist)
+
 `lhlist` is a library for **L**abeled **H**etergogeneous **List**s.
 
 This library provides data structures and macros for creating and accessing lists of differently-typed objects that each have their own unique label.
