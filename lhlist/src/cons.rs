@@ -300,8 +300,44 @@ where
     }
 }
 
+/// Provides the length of a cons-list.
+///
+/// Since cons-list types are statically defined, this length is known at compile-time.
+///
+/// ## Example
+///
+/// ```
+/// # #[macro_use] extern crate lhlist;
+/// # fn main() {
+/// use lhlist::{Cons, Len, Nil};
+///
+/// type MyList = Cons<usize, Cons<&'static str, Cons<f32, Nil>>>;
+/// assert_eq!(MyList::LEN, 3usize);
+///
+/// let list: MyList = cons![8, "Hello!", 4.5];
+/// assert_eq!(list.len(), 3usize);
+/// # }
+/// ```
+pub trait Len {
+    /// The length of this list
+    const LEN: usize;
 
-/// Macro for creation a [Cons](struct.Cons.html)-list.
+    /// Returns the length of this list
+    fn len(&self) -> usize { Self::LEN }
+}
+
+impl Len for Nil {
+    const LEN: usize = 0;
+}
+impl<H, T> Len for Cons<H, T>
+where
+    T: Len
+{
+    const LEN: usize = 1 + <T as Len>::LEN;
+}
+
+
+/// Macro for creation of a [Cons](struct.Cons.html)-list.
 ///
 /// # Example
 ///
