@@ -229,7 +229,7 @@ macro_rules! lhlist {
     ($label:ty = $value:expr) => (
         $crate::Cons {
             head: $crate::LabeledValue::<$label>::new($value),
-            tail: Nil
+            tail: $crate::Nil
         }
     );
     ($label:ty = $value:expr, $($rest:tt)*) => (
