@@ -195,7 +195,34 @@ macro_rules! labels {
     );
 }
 
-/// Macro for creating [LVCons](type.LVCons.html) label-value cons-lists.
+/// Macro for creating labeled heterogeneous lists.
+///
+/// Create an [LVCons](type.LVCons.html) label-value cons-list based on a comma-separated list
+/// of `<label> = <value>` assignments.
+///
+/// # Example
+/// ```
+/// # #[macro_use] extern crate lhlist;
+/// # fn main() {
+/// new_label![Name: &'static str];
+/// new_label![Planets: Vec<&'static str>];
+/// new_label![NumDwarfPlanets: usize]; // currently recognized
+/// new_label![Age: f32]; // in billions of years
+/// new_label![Mass: f32]; // in Solar masses
+///
+/// let solar_system = lhlist![
+///     Name = "Solar System",
+///     Planets = vec![
+///         "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"
+///     ],
+///     NumDwarfPlanets = 5,
+///     Age = 4.568,
+///     Mass = 1.0014,
+/// ];
+/// assert_eq!(solar_system[Planets][2], "Earth"); // third rock from the sun
+/// assert_eq!(solar_system[Age], 4.568);
+/// # }
+/// ```
 #[macro_export]
 macro_rules! lhlist {
     () => ( $crate::Nil );

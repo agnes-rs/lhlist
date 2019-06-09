@@ -1,7 +1,5 @@
 /*!
 Iteration over heterogeneous cons-lists and labeled heterogeneous cons-lists.
-
-
 */
 use crate::cons::{Cons, LCons, LVCons, Nil};
 use crate::label::{Label, LabeledValue};
@@ -10,23 +8,22 @@ use crate::label::{Label, LabeledValue};
 ///
 /// For a version that iterates over only the values of a labeled cons-list
 /// ([LVCons](../type.LVCons.html)), see [ValuesIterator](struct.ValuesIterator.html).
+///
+/// This object is usually created by calling [iter](../struct.Cons.html#method.iter) on a list.
+///
 /// ## Example
 ///
-/// This example demonstrates building and iterating over the `LabeledValue`s of a heterogeneous
+/// This example demonstrates building and iterating over the
+/// [LabeledValue](../struct.LabeledValue.html)s of a heterogeneous
 /// cons-list.
 /// ```
 /// # #[macro_use] extern crate lhlist;
 /// use lhlist::{Label, labeled};
 ///
 /// # fn main() {
-/// #[label(type=Vec<usize>)]
-/// struct Label1;
-///
-/// #[label(type=Vec<&'static str>)]
-/// struct Label2;
-///
-/// #[label(type=Vec<f64>)]
-/// struct Label3;
+/// new_label![Label1: Vec<usize>];
+/// new_label![Label2: Vec<&'static str>];
+/// new_label![Label3: Vec<f64>];
 ///
 /// let test_list = lhlist![
 ///     Label1 = vec![8usize, 4, 1, 5, 2],
@@ -106,6 +103,10 @@ where
 ///
 /// For a version that iterates over a cons-list ([Cons](../struct.Cons.html)) without stripping
 /// labeled information, see [ConsIterator](struct.ConsIterator.html).
+///
+/// This object is usually created by calling [iter_values](../struct.Cons.html#method.iter_values)
+/// on a list.
+///
 /// ## Example
 ///
 /// This example demonstrates building and iterating over the values of a labeled heterogeneous
@@ -115,14 +116,9 @@ where
 /// use lhlist::Label;
 ///
 /// # fn main() {
-/// #[label(type=Vec<usize>)]
-/// struct Label1;
-///
-/// #[label(type=Vec<&'static str>)]
-/// struct Label2;
-///
-/// #[label(type=Vec<f64>)]
-/// struct Label3;
+/// new_label![Label1: Vec<usize>];
+/// new_label![Label2: Vec<&'static str>];
+/// new_label![Label3: Vec<f64>];
 ///
 /// let test_list = lhlist![
 ///     Label1 = vec![8usize, 4, 1, 5, 2],
@@ -242,9 +238,7 @@ where
 /// # fn main() {
 /// // Create the labels
 /// new_label![Label1: Vec<usize>];
-///
 /// new_label![Label2: Vec<&'static str>];
-///
 /// new_label![Label3: Vec<f64>];
 ///
 /// // Instantiate the list
@@ -263,7 +257,7 @@ where
 ///     }
 /// }
 ///
-/// // Apply the function
+/// // Apply the function and collect into an unlabeled list
 /// let counts = test_list.iter_values().map(CountFn).collect_into_hlist();
 /// assert_eq!(counts, cons![5, 2, 4]);
 ///
@@ -271,7 +265,7 @@ where
 /// new_label![Label1Count: usize];
 /// new_label![Label2Count: usize];
 /// new_label![Label3Count: usize];
-
+///
 /// let counts = test_list.iter_values().map(CountFn)
 ///     .collect_into_labeled_hlist::<Labels![Label1Count, Label2Count, Label3Count]>();
 /// assert_eq!(counts, lhlist![Label1Count=5, Label2Count=2, Label3Count=4]);

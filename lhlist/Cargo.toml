@@ -4,6 +4,9 @@ description = "Labeled heterogeneous lists"
 version = "0.1.0"
 authors = ["Jamie Blondin <jblondin@gmail.com>"]
 edition = "2018"
+readme = "../README.md"
+keywords = ["data-structure", "collection", "heterogeneous"]
+categories = ["data-structures"]
 
 [dependencies]
 label_attribute = { path = "../label_attribute" }

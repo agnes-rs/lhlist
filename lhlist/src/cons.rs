@@ -111,7 +111,7 @@ impl<Head, Tail> Cons<Head, Tail> where Head: Label {
     ///
     /// # Example
     /// ```
-    /// #[macro_use] extern crate lhlist;
+    /// # #[macro_use] extern crate lhlist;
     /// use lhlist::labeled;
     /// # fn main() {
     /// new_label![Label1: u8];
@@ -141,9 +141,34 @@ impl<Head, Tail> Cons<Head, Tail> where Head: Label {
     ///
     /// This is equivalent to using index `list[Label]` notation in a mutable context.
     ///
+    /// Note that the label itself cannot be changed via this method since labels in `lhlist` are
+    /// type-level.
+    ///
     /// # Example
     ///
-
+    /// ```
+    /// # #[macro_use] extern crate lhlist;
+    /// use lhlist::labeled;
+    /// # fn main() {
+    /// new_label![Label1: u8];
+    /// new_label![Label2: i8];
+    /// new_label![Label3: bool];
+    /// let mut list = lhlist![
+    ///     Label1 = 9,
+    ///     Label2 = -4,
+    ///     Label3 = true,
+    /// ];
+    ///
+    /// let value2 = list.elem_mut::<Label2>();
+    /// assert_eq!(value2, &mut labeled(Label2, -4));
+    /// *value2 = labeled(Label2, -9);
+    /// assert_eq!(list, lhlist![
+    ///     Label1 = 9,
+    ///     Label2 = -9,
+    ///     Label3 = true,
+    /// ]);
+    /// # }
+    /// ```
     pub fn elem_mut<TargetL>(&mut self) -> &mut <Self as LookupElemByLabel<TargetL>>::Elem
     where
         Self: LookupElemByLabelMut<TargetL>
@@ -161,7 +186,7 @@ impl<Head, Tail> Cons<Head, Tail> where Head: Label {
     ///
     ///
     /// ```
-    /// #[macro_use] extern crate lhlist;
+    /// # #[macro_use] extern crate lhlist;
     /// # fn main() {
     /// new_label![Label1: u8];
     /// new_label![Label2: i8];
@@ -196,9 +221,8 @@ impl<Head, Tail> Cons<Head, Tail> where Head: Label {
     ///
     /// # Example
     ///
-    ///
     /// ```
-    /// #[macro_use] extern crate lhlist;
+    /// # #[macro_use] extern crate lhlist;
     /// # fn main() {
     /// new_label![Label1: u8];
     /// new_label![Label2: i8];
