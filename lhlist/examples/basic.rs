@@ -1,4 +1,5 @@
-#[macro_use] extern crate lhlist;
+#[macro_use]
+extern crate lhlist;
 
 use lhlist::Label;
 

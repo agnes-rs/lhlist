@@ -1,5 +1,5 @@
-use std::ops::{Index, IndexMut};
 use std::marker::PhantomData;
+use std::ops::{Index, IndexMut};
 
 use crate::iter::{ConsIterator, ValuesIterator};
 use crate::label::{LabeledValue, Value};
@@ -54,16 +54,18 @@ pub type LVCons<Label, Tail> = Cons<LabeledValue<Label>, Tail>;
 pub type LCons<Label, Tail> = Cons<PhantomData<Label>, Tail>;
 
 impl Default for Nil {
-    fn default() -> Nil { Nil }
+    fn default() -> Nil {
+        Nil
+    }
 }
 impl<Lbl, Tail> Default for LCons<Lbl, Tail>
 where
-    Tail: Default
+    Tail: Default,
 {
     fn default() -> LCons<Lbl, Tail> {
         Cons {
             head: PhantomData,
-            tail: Tail::default()
+            tail: Tail::default(),
         }
     }
 }
@@ -82,7 +84,7 @@ impl<Head, Tail> Cons<Head, Tail> {
     /// equivalent to `list.has_label_typearg::<ExampleLabel>())`.
     pub fn has_label<TargetL>(&self, _target_label: TargetL) -> bool
     where
-        Self: Member<TargetL>
+        Self: Member<TargetL>,
     {
         self.has_label_typearg::<TargetL>()
     }
@@ -92,7 +94,7 @@ impl<Head, Tail> Cons<Head, Tail> {
     /// `list.has_label_typearg::<ExampleLabel>())`.
     pub fn has_label_typearg<TargetL>(&self) -> bool
     where
-        Self: Member<TargetL>
+        Self: Member<TargetL>,
     {
         <Self as Member<TargetL>>::Output::VALUE
     }
@@ -130,7 +132,7 @@ impl<Head, Tail> Cons<Head, Tail> {
     /// ```
     pub fn elem<TargetL>(&self) -> &<Self as LookupElemByLabel<TargetL>>::Elem
     where
-        Self: LookupElemByLabel<TargetL>
+        Self: LookupElemByLabel<TargetL>,
     {
         LookupElemByLabel::<TargetL>::elem(self)
     }
@@ -169,7 +171,7 @@ impl<Head, Tail> Cons<Head, Tail> {
     /// ```
     pub fn elem_mut<TargetL>(&mut self) -> &mut <Self as LookupElemByLabel<TargetL>>::Elem
     where
-        Self: LookupElemByLabelMut<TargetL>
+        Self: LookupElemByLabelMut<TargetL>,
     {
         LookupElemByLabelMut::<TargetL>::elem_mut(self)
     }
@@ -202,8 +204,9 @@ impl<Head, Tail> Cons<Head, Tail> {
     /// assert_eq!(list.value::<Label3>(), &true);
     /// # }
     /// ```
-    pub fn value<'a, TargetL>(&'a self)
-        -> &'a <<Self as LookupElemByLabel<TargetL>>::Elem as Value>::Output
+    pub fn value<'a, TargetL>(
+        &'a self,
+    ) -> &'a <<Self as LookupElemByLabel<TargetL>>::Elem as Value>::Output
     where
         Self: LookupElemByLabel<TargetL>,
         <Self as LookupElemByLabel<TargetL>>::Elem: 'a + Value,
@@ -248,8 +251,9 @@ impl<Head, Tail> Cons<Head, Tail> {
     /// ]);
     /// # }
     /// ```
-    pub fn value_mut<'a, TargetL>(&'a mut self)
-        -> &'a mut <<Self as LookupElemByLabel<TargetL>>::Elem as Value>::Output
+    pub fn value_mut<'a, TargetL>(
+        &'a mut self,
+    ) -> &'a mut <<Self as LookupElemByLabel<TargetL>>::Elem as Value>::Output
     where
         Self: LookupElemByLabelMut<TargetL>,
         <Self as LookupElemByLabel<TargetL>>::Elem: 'a + Value,
@@ -261,10 +265,14 @@ impl<Head, Tail> Cons<Head, Tail> {
 impl Nil {
     /// Returns `false`, since the `Nil` list has no labels. See
     /// [has_label](type.LVCons.html#method.has_label) for more details.
-    pub fn has_label<TargetL>(&self, _target_label:TargetL) -> bool { false }
+    pub fn has_label<TargetL>(&self, _target_label: TargetL) -> bool {
+        false
+    }
     /// Returns `false`, since the `Nil` list has no labels. See
     /// [has_label_typearg](type.LVCons.html#method.has_label_typearg) for more details.
-    pub fn has_label_typearg<TargetL>(&self) -> bool { false }
+    pub fn has_label_typearg<TargetL>(&self) -> bool {
+        false
+    }
 
     /// Returns an empty [ConsIterator](iter/struct.ConsIterator.html).
     ///
@@ -323,7 +331,9 @@ pub trait Len {
     const LEN: usize;
 
     /// Returns the length of this list
-    fn len(&self) -> usize { Self::LEN }
+    fn len(&self) -> usize {
+        Self::LEN
+    }
 }
 
 impl Len for Nil {
@@ -331,11 +341,10 @@ impl Len for Nil {
 }
 impl<H, T> Len for Cons<H, T>
 where
-    T: Len
+    T: Len,
 {
     const LEN: usize = 1 + <T as Len>::LEN;
 }
-
 
 /// Macro for creation of a [Cons](struct.Cons.html)-list.
 ///
@@ -384,7 +393,8 @@ mod tests {
 
         let list = cons![8usize, "Hello!!!", 5.3];
         assert_eq![list, cons(8usize, cons("Hello!!!", cons(5.3, Nil)))];
-        assert_eq![list,
+        assert_eq![
+            list,
             Cons {
                 head: 8usize,
                 tail: Cons {
@@ -394,6 +404,7 @@ mod tests {
                         tail: Nil
                     }
                 }
-            }];
+            }
+        ];
     }
 }

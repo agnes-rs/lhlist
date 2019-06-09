@@ -1,6 +1,6 @@
 use typenum::Unsigned;
 
-use crate::cons::{Cons, Nil, Len, LCons, LVCons};
+use crate::cons::{Cons, LCons, LVCons, Len, Nil};
 
 /// A trait with information about a label.
 ///
@@ -29,7 +29,10 @@ pub trait Label {
     }
 }
 
-impl<L> Label for std::marker::PhantomData<L> where L: Label {
+impl<L> Label for std::marker::PhantomData<L>
+where
+    L: Label,
+{
     const NAME: &'static str = L::NAME;
     type AssocType = L::AssocType;
     type Uid = L::Uid;
@@ -41,25 +44,37 @@ pub struct LabeledValue<L: Label> {
     /// LabeledValue value
     pub value: L::AssocType,
 }
-impl<L> LabeledValue<L> where L: Label {
+impl<L> LabeledValue<L>
+where
+    L: Label,
+{
     /// Create a new labeled value.
     pub fn new(value: L::AssocType) -> LabeledValue<L> {
         LabeledValue { value }
     }
 }
-impl<L> Label for LabeledValue<L> where L: Label {
+impl<L> Label for LabeledValue<L>
+where
+    L: Label,
+{
     const NAME: &'static str = L::NAME;
     type AssocType = L::AssocType;
     type Uid = L::Uid;
 }
 /// Creates a new [LabeledValue](struct.LabeledValue.html) object for placement into an
 /// [LVCons](type.LVCons.html) list.
-pub fn labeled<L>(_label: L, value: L::AssocType) -> LabeledValue<L> where L: Label {
+pub fn labeled<L>(_label: L, value: L::AssocType) -> LabeledValue<L>
+where
+    L: Label,
+{
     labeled_typearg::<L>(value)
 }
 /// Creates a new [LabeledValue](struct.LabeledValue.html) object for placement into an
 /// [LVCons](type.LVCons.html) list.
-pub fn labeled_typearg<L>(value: L::AssocType) -> LabeledValue<L> where L: Label {
+pub fn labeled_typearg<L>(value: L::AssocType) -> LabeledValue<L>
+where
+    L: Label,
+{
     LabeledValue { value }
 }
 
@@ -72,10 +87,17 @@ pub trait Value {
     /// Mutable reference to the contained value
     fn value_mut(&mut self) -> &mut Self::Output;
 }
-impl<L> Value for LabeledValue<L> where L: Label {
+impl<L> Value for LabeledValue<L>
+where
+    L: Label,
+{
     type Output = L::AssocType;
-    fn value_ref(&self) -> &Self::Output { &self.value }
-    fn value_mut(&mut self) -> &mut Self::Output { &mut self.value }
+    fn value_ref(&self) -> &Self::Output {
+        &self.value
+    }
+    fn value_mut(&mut self) -> &mut Self::Output {
+        &mut self.value
+    }
 }
 
 /// Trait for extracting the labels ([LCons](type.LCons.html)) from a cons-list of elements which
@@ -87,7 +109,7 @@ pub trait HasLabels {
     /// Instantiates a cons-list only containing label information.
     fn labels_only(&self) -> Self::Labels
     where
-        Self::Labels: Default
+        Self::Labels: Default,
     {
         Self::Labels::default()
     }
@@ -123,14 +145,18 @@ pub trait StrLabels {
     /// Generates the label name `Vec`
     fn static_labels() -> Vec<&'static str>;
     /// Generates the label name `Vec` using a value
-    fn labels(&self) -> Vec<&'static str> { Self::static_labels() }
+    fn labels(&self) -> Vec<&'static str> {
+        Self::static_labels()
+    }
 }
 impl StrLabels for Nil {
-    fn static_labels() -> Vec<&'static str> {vec![] }
+    fn static_labels() -> Vec<&'static str> {
+        vec![]
+    }
 }
 impl<Lbl: Sized, Tail> StrLabels for Cons<Lbl, Tail>
 where
-    Self: Len + BuildStrLabels
+    Self: Len + BuildStrLabels,
 {
     fn static_labels() -> Vec<&'static str> {
         let mut output = vec![""; Self::LEN];
@@ -150,7 +176,7 @@ impl BuildStrLabels for Nil {
 impl<Lbl, Tail> BuildStrLabels for Cons<Lbl, Tail>
 where
     Lbl: Label,
-    Tail: BuildStrLabels
+    Tail: BuildStrLabels,
 {
     fn build_labels(v: &mut Vec<&'static str>, idx: usize) {
         debug_assert![idx < v.len()];
@@ -295,11 +321,10 @@ macro_rules! lhlist {
     );
 }
 
-
 #[cfg(test)]
 mod tests {
-    use std::marker::PhantomData;
     use crate::*;
+    use std::marker::PhantomData;
 
     #[test]
     fn label_create() {
@@ -326,11 +351,7 @@ mod tests {
         struct Label2;
         #[label(type=i16, crate=crate)]
         struct Label3;
-        let test_list = lhlist![
-            Label1 = 2,
-            Label2 = 301,
-            Label3 = -523,
-        ];
+        let test_list = lhlist![Label1 = 2, Label2 = 301, Label3 = -523,];
         let iter = test_list.iter();
         let (item, iter) = iter.next();
         assert_eq!(item, &labeled(Label1, 2));
@@ -338,7 +359,6 @@ mod tests {
         assert_eq!(item, &labeled(Label2, 301));
         let (item, _) = iter.next();
         assert_eq!(item, &labeled(Label3, -523));
-
 
         let labels_only = test_list.labels_only();
         let iter = labels_only.iter();

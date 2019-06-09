@@ -1,6 +1,6 @@
-use typenum::{B0, B1, IsEqual};
+use typenum::{IsEqual, B0, B1};
 
-use crate::cons::{Nil, Cons};
+use crate::cons::{Cons, Nil};
 use crate::label::Label;
 
 /// Marker struct signifying `true`.
@@ -25,8 +25,12 @@ pub trait ToBool {
     /// Conversion output (typically either [True](struct.True.html) or [False](struct.False.html))
     type Output: Bool;
 }
-impl ToBool for B1 { type Output = True; }
-impl ToBool for B0 { type Output = False; }
+impl ToBool for B1 {
+    type Output = True;
+}
+impl ToBool for B0 {
+    type Output = False;
+}
 
 /// Label equality.
 ///
@@ -45,7 +49,6 @@ where
 {
     type Output = <<L::Uid as IsEqual<M::Uid>>::Output as ToBool>::Output;
 }
-
 
 /// Check to see if a target label is a list member.
 pub trait Member<TargetL> {
@@ -80,7 +83,6 @@ where
 {
     type Output = <T as Member<TargetL>>::Output;
 }
-
 
 #[cfg(test)]
 mod tests {

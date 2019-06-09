@@ -1,6 +1,6 @@
 use crate::cons::Cons;
 use crate::label::Label;
-use crate::relation::{True, False, LabelEq, Member};
+use crate::relation::{False, LabelEq, Member, True};
 
 /// Lookup a specific element in a list by label.
 pub trait LookupElemByLabel<TargetL> {
@@ -23,7 +23,7 @@ where
     type Elem = <Self as LookupElemByLabelMatch<
         TargetL,
         <L as LabelEq<TargetL>>::Output,
-        <T as Member<TargetL>>::Output
+        <T as Member<TargetL>>::Output,
     >>::Elem;
 
     fn elem(&self) -> &Self::Elem {
@@ -44,22 +44,22 @@ pub trait LookupElemByLabelMatch<L, LabelMatch, TailMatch> {
 }
 
 // head matches
-impl<TargetL, L, T, TailMatch> LookupElemByLabelMatch<TargetL, True, TailMatch>
-    for Cons<L, T>
+impl<TargetL, L, T, TailMatch> LookupElemByLabelMatch<TargetL, True, TailMatch> for Cons<L, T>
 where
-    L: Label
+    L: Label,
 {
     type Elem = L;
 
-    fn elem(&self) -> &Self::Elem { &self.head }
+    fn elem(&self) -> &Self::Elem {
+        &self.head
+    }
 }
 
 // head doesn't match but tail does
-impl<TargetL, L, T> LookupElemByLabelMatch<TargetL, False, True>
-    for Cons<L, T>
+impl<TargetL, L, T> LookupElemByLabelMatch<TargetL, False, True> for Cons<L, T>
 where
     L: Label,
-    T: LookupElemByLabel<TargetL>
+    T: LookupElemByLabel<TargetL>,
 {
     type Elem = <T as LookupElemByLabel<TargetL>>::Elem;
 
@@ -83,7 +83,7 @@ where
         TargetL,
         <L as LabelEq<TargetL>>::Output,
         <T as Member<TargetL>>::Output,
-        Elem=<Self as LookupElemByLabel<TargetL>>::Elem,
+        Elem = <Self as LookupElemByLabel<TargetL>>::Elem,
     >,
 {
     fn elem_mut(&mut self) -> &mut Self::Elem {
@@ -104,20 +104,20 @@ pub trait LookupElemByLabelMutMatch<L, LabelMatch, TailMatch>:
 }
 
 // head matches
-impl<TargetL, L, T, TailMatch> LookupElemByLabelMutMatch<TargetL, True, TailMatch>
-    for Cons<L, T>
+impl<TargetL, L, T, TailMatch> LookupElemByLabelMutMatch<TargetL, True, TailMatch> for Cons<L, T>
 where
-    L: Label
+    L: Label,
 {
-    fn elem_mut(&mut self) -> &mut Self::Elem { &mut self.head }
+    fn elem_mut(&mut self) -> &mut Self::Elem {
+        &mut self.head
+    }
 }
 
 // head doesn't match but tail does
-impl<TargetL, L, T> LookupElemByLabelMutMatch<TargetL, False, True>
-    for Cons<L, T>
+impl<TargetL, L, T> LookupElemByLabelMutMatch<TargetL, False, True> for Cons<L, T>
 where
     L: Label,
-    T: LookupElemByLabelMut<TargetL>
+    T: LookupElemByLabelMut<TargetL>,
 {
     fn elem_mut(&mut self) -> &mut Self::Elem {
         LookupElemByLabelMut::<TargetL>::elem_mut(&mut self.tail)

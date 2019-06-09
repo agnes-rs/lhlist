@@ -90,22 +90,21 @@ documentation.
 
 #![warn(missing_docs)]
 
-extern crate typenum;
 extern crate label_attribute;
+extern crate typenum;
 
 pub use label_attribute::*;
 
-
 mod cons;
-pub use cons::{Nil, cons, Cons, LCons, Len, LVCons};
+pub use cons::{cons, Cons, LCons, LVCons, Len, Nil};
 
 mod label;
-pub use label::{HasLabels, Label, LabeledValue, labeled, labeled_typearg, StrLabels, Value};
+pub use label::{labeled, labeled_typearg, HasLabels, Label, LabeledValue, StrLabels, Value};
 
 mod relation;
-pub use relation::{True, False, Bool, ToBool, LabelEq, Member};
+pub use relation::{Bool, False, LabelEq, Member, ToBool, True};
 
 mod lookup;
-pub use lookup::{LookupElemByLabel};
+pub use lookup::LookupElemByLabel;
 
 pub mod iter;

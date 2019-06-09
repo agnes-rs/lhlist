@@ -41,7 +41,7 @@ use crate::label::{Label, LabeledValue};
 /// # }
 /// ```
 #[derive(Debug)]
-pub struct ConsIterator<'a, List, A=Nil> {
+pub struct ConsIterator<'a, List, A = Nil> {
     list: &'a List,
     adapter: A,
 }
@@ -55,11 +55,8 @@ impl<'a, List> ConsIterator<'a, List> {
 impl<'a, List, A> ConsIterator<'a, List, A> {
     /// Creates a new `ConsIterator` over an `Cons`-list with an adapter (see
     /// [Adapter](trait.Adapter.html)).
-     pub fn with_adapter(list: &'a List, adapter: A) -> Self {
-        ConsIterator {
-            list,
-            adapter
-        }
+    pub fn with_adapter(list: &'a List, adapter: A) -> Self {
+        ConsIterator { list, adapter }
     }
 }
 
@@ -72,7 +69,7 @@ where
     pub fn next(mut self) -> (<A as Adapter<&'a H>>::Output, ConsIterator<'a, T, A>) {
         (
             self.adapter.adapt(&self.list.head),
-            ConsIterator::with_adapter(&self.list.tail, self.adapter)
+            ConsIterator::with_adapter(&self.list.tail, self.adapter),
         )
     }
     /// Creates an iterator which call a [MapFunc](trait.MapFunc.html) on each element.
@@ -80,22 +77,28 @@ where
     /// See [MapAdapter](struct.MapAdapter.html) for more information.
     pub fn map<F>(self, f: F) -> ConsIterator<'a, Cons<H, T>, Cons<MapAdapter<F>, A>>
     where
-        F: MapFunc<<A as Adapter<&'a H>>::Output>
+        F: MapFunc<<A as Adapter<&'a H>>::Output>,
     {
-        ConsIterator::with_adapter(self.list, Cons { head: MapAdapter { f }, tail: self.adapter })
+        ConsIterator::with_adapter(
+            self.list,
+            Cons {
+                head: MapAdapter { f },
+                tail: self.adapter,
+            },
+        )
     }
     /// Collects this iterator into a new labeled heterogeneous list
     ///
     /// For an example of usage, see the [MapAdapter](struct.MapAdapter.html) example.
-    pub fn collect_into_labeled_hlist<LabelList>(self)
-        -> <Self as CollectIntoLabeledHList<LabelList>>::Output
+    pub fn collect_into_labeled_hlist<LabelList>(
+        self,
+    ) -> <Self as CollectIntoLabeledHList<LabelList>>::Output
     where
         Self: CollectIntoLabeledHList<LabelList>,
     {
         CollectIntoLabeledHList::<LabelList>::collect_into_labeled_hlist(self)
     }
 }
-
 
 /// An iterator over a labeled heterogeneous cons-list ([LVCons](../type.LVCons.html)) that only
 /// provides access to the contained values (as opposed to the
@@ -136,7 +139,7 @@ where
 /// # }
 /// ```
 #[derive(Debug)]
-pub struct ValuesIterator<'a, List, A=Nil> {
+pub struct ValuesIterator<'a, List, A = Nil> {
     list: &'a List,
     adapter: A,
 }
@@ -151,10 +154,7 @@ impl<'a, List, A> ValuesIterator<'a, List, A> {
     /// Creates a new `ValuesIterator` over an `LVCons`-list with a specified adapter (see
     /// [Adapter](trait.Adapter.html)).
     pub fn with_adapter(list: &'a List, adapter: A) -> Self {
-        ValuesIterator {
-            list,
-            adapter
-        }
+        ValuesIterator { list, adapter }
     }
 }
 
@@ -165,12 +165,15 @@ where
 {
     /// Returns the next value (if exists) along with a new iterator advanced to the next element of
     /// the list.
-    pub fn next(mut self)
-        -> (<A as Adapter<&'a L::AssocType>>::Output, ValuesIterator<'a, T, A>)
-    {
+    pub fn next(
+        mut self,
+    ) -> (
+        <A as Adapter<&'a L::AssocType>>::Output,
+        ValuesIterator<'a, T, A>,
+    ) {
         (
             self.adapter.adapt(&self.list.head.value),
-            ValuesIterator::with_adapter(&self.list.tail, self.adapter)
+            ValuesIterator::with_adapter(&self.list.tail, self.adapter),
         )
     }
     /// Creates an iterator which call a [MapFunc](trait.MapFunc.html) on each element.
@@ -178,24 +181,28 @@ where
     /// See [MapAdapter](struct.MapAdapter.html) for more information.
     pub fn map<F>(self, f: F) -> ValuesIterator<'a, LVCons<L, T>, Cons<MapAdapter<F>, A>>
     where
-        F: MapFunc<<A as Adapter<&'a L::AssocType>>::Output>
+        F: MapFunc<<A as Adapter<&'a L::AssocType>>::Output>,
     {
-        ValuesIterator::with_adapter(self.list, Cons { head: MapAdapter { f }, tail: self.adapter })
+        ValuesIterator::with_adapter(
+            self.list,
+            Cons {
+                head: MapAdapter { f },
+                tail: self.adapter,
+            },
+        )
     }
     /// Collects this iterator into a new labeled heterogeneous list
     ///
     /// For an example of usage, see the [MapAdapter](struct.MapAdapter.html) example.
-    pub fn collect_into_labeled_hlist<LabelList>(self)
-        -> <Self as CollectIntoLabeledHList<LabelList>>::Output
+    pub fn collect_into_labeled_hlist<LabelList>(
+        self,
+    ) -> <Self as CollectIntoLabeledHList<LabelList>>::Output
     where
         Self: CollectIntoLabeledHList<LabelList>,
     {
         CollectIntoLabeledHList::<LabelList>::collect_into_labeled_hlist(self)
     }
 }
-
-
-
 
 /// An iterator component that transforms an input.
 pub trait Adapter<T> {
@@ -207,7 +214,9 @@ pub trait Adapter<T> {
 
 impl<T> Adapter<T> for Nil {
     type Output = T;
-    fn adapt(&mut self, input: T) -> Self::Output { input }
+    fn adapt(&mut self, input: T) -> Self::Output {
+        input
+    }
 }
 
 impl<T, Head, Tail> Adapter<T> for Cons<Head, Tail>
@@ -273,14 +282,16 @@ where
 /// ```
 #[derive(Debug)]
 pub struct MapAdapter<F> {
-    f: F
+    f: F,
 }
 impl<F, T> Adapter<T> for MapAdapter<F>
 where
-    F: MapFunc<T>
+    F: MapFunc<T>,
 {
     type Output = <F as MapFunc<T>>::Output;
-    fn adapt(&mut self, input: T) -> Self::Output { self.f.call(input) }
+    fn adapt(&mut self, input: T) -> Self::Output {
+        self.f.call(input)
+    }
 }
 
 /// Function for use in mapping over heterogeneous lists.
@@ -311,47 +322,49 @@ pub trait CollectIntoHList {
 
 impl<'a, A> CollectIntoHList for ValuesIterator<'a, Nil, A> {
     type Output = Nil;
-    fn collect_into_hlist(self) -> Self::Output { Nil }
+    fn collect_into_hlist(self) -> Self::Output {
+        Nil
+    }
 }
 
 impl<'a, A, L, T> CollectIntoHList for ValuesIterator<'a, LVCons<L, T>, A>
 where
     L: Label,
     A: Adapter<&'a L::AssocType>,
-    ValuesIterator<'a, T, A>: CollectIntoHList
+    ValuesIterator<'a, T, A>: CollectIntoHList,
 {
     type Output = Cons<
         <A as Adapter<&'a L::AssocType>>::Output,
-        <ValuesIterator<'a, T, A> as CollectIntoHList>::Output
+        <ValuesIterator<'a, T, A> as CollectIntoHList>::Output,
     >;
     fn collect_into_hlist(self) -> Self::Output {
         let (item, next_iter) = self.next();
         Cons {
             head: item,
-            tail: next_iter.collect_into_hlist()
+            tail: next_iter.collect_into_hlist(),
         }
     }
 }
 
 impl<'a, A> CollectIntoHList for ConsIterator<'a, Nil, A> {
     type Output = Nil;
-    fn collect_into_hlist(self) -> Self::Output { Nil }
+    fn collect_into_hlist(self) -> Self::Output {
+        Nil
+    }
 }
 
 impl<'a, A, H, T> CollectIntoHList for ConsIterator<'a, Cons<H, T>, A>
 where
     A: Adapter<&'a H>,
-    ConsIterator<'a, T, A>: CollectIntoHList
+    ConsIterator<'a, T, A>: CollectIntoHList,
 {
-    type Output = Cons<
-        <A as Adapter<&'a H>>::Output,
-        <ConsIterator<'a, T, A> as CollectIntoHList>::Output
-    >;
+    type Output =
+        Cons<<A as Adapter<&'a H>>::Output, <ConsIterator<'a, T, A> as CollectIntoHList>::Output>;
     fn collect_into_hlist(self) -> Self::Output {
         let (item, next_iter) = self.next();
         Cons {
             head: item,
-            tail: next_iter.collect_into_hlist()
+            tail: next_iter.collect_into_hlist(),
         }
     }
 }
@@ -384,18 +397,16 @@ impl<'a, TargetL, TargetT, A, L, T> CollectIntoLabeledHList<LCons<TargetL, Targe
 where
     L: Label,
     TargetL: Label,
-    A: Adapter<&'a LabeledValue<L>, Output=TargetL::AssocType>,
-    ConsIterator<'a, T, A>: CollectIntoLabeledHList<TargetT>
+    A: Adapter<&'a LabeledValue<L>, Output = TargetL::AssocType>,
+    ConsIterator<'a, T, A>: CollectIntoLabeledHList<TargetT>,
 {
-    type Output = LVCons<
-        TargetL,
-        <ConsIterator<'a, T, A> as CollectIntoLabeledHList<TargetT>>::Output
-    >;
+    type Output =
+        LVCons<TargetL, <ConsIterator<'a, T, A> as CollectIntoLabeledHList<TargetT>>::Output>;
     fn collect_into_labeled_hlist(self) -> Self::Output {
         let (item, next_iter) = self.next();
         Cons {
             head: LabeledValue::new(item),
-            tail: next_iter.collect_into_labeled_hlist()
+            tail: next_iter.collect_into_labeled_hlist(),
         }
     }
 }
@@ -412,26 +423,24 @@ impl<'a, TargetL, TargetT, A, L, T> CollectIntoLabeledHList<LCons<TargetL, Targe
 where
     L: Label,
     TargetL: Label,
-    A: Adapter<&'a L::AssocType, Output=TargetL::AssocType>,
-    ValuesIterator<'a, T, A>: CollectIntoLabeledHList<TargetT>
+    A: Adapter<&'a L::AssocType, Output = TargetL::AssocType>,
+    ValuesIterator<'a, T, A>: CollectIntoLabeledHList<TargetT>,
 {
-    type Output = LVCons<
-        TargetL,
-        <ValuesIterator<'a, T, A> as CollectIntoLabeledHList<TargetT>>::Output
-    >;
+    type Output =
+        LVCons<TargetL, <ValuesIterator<'a, T, A> as CollectIntoLabeledHList<TargetT>>::Output>;
     fn collect_into_labeled_hlist(self) -> Self::Output {
         let (item, next_iter) = self.next();
         Cons {
             head: LabeledValue::new(item),
-            tail: next_iter.collect_into_labeled_hlist()
+            tail: next_iter.collect_into_labeled_hlist(),
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::*;
     use crate::iter::*;
+    use crate::*;
 
     #[test]
     fn map() {
@@ -484,22 +493,28 @@ mod tests {
             }
         }
 
-        let result = test_list.iter_values().map(DoStuff).map(DoStuff2).collect_into_hlist();
+        let result = test_list
+            .iter_values()
+            .map(DoStuff)
+            .map(DoStuff2)
+            .collect_into_hlist();
         assert_eq!(result, cons(25, cons(16, cons(9, Nil))));
 
-        #[label(type=usize, crate=crate)] struct Label1Result;
-        #[label(type=usize, crate=crate)] struct Label2Result;
-        #[label(type=usize, crate=crate)] struct Label3Result;
+        #[label(type=usize, crate=crate)]
+        struct Label1Result;
+        #[label(type=usize, crate=crate)]
+        struct Label2Result;
+        #[label(type=usize, crate=crate)]
+        struct Label3Result;
 
-        let result = test_list.iter_values().map(DoStuff).map(DoStuff2)
+        let result = test_list
+            .iter_values()
+            .map(DoStuff)
+            .map(DoStuff2)
             .collect_into_labeled_hlist::<Labels![Label1Result, Label2Result, Label3Result]>();
         assert_eq!(
             result,
-            lhlist![
-                Label1Result = 25,
-                Label2Result = 16,
-                Label3Result = 9,
-            ]
+            lhlist![Label1Result = 25, Label2Result = 16, Label3Result = 9,]
         );
     }
 }
