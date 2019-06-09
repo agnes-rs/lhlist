@@ -2,7 +2,7 @@ use std::ops::{Index, IndexMut};
 use std::marker::PhantomData;
 
 use crate::iter::{ConsIterator, ValuesIterator};
-use crate::label::{Label, LabeledValue, Value};
+use crate::label::{LabeledValue, Value};
 use crate::lookup::{LookupElemByLabel, LookupElemByLabelMut};
 use crate::relation::{Bool, Member};
 
@@ -48,13 +48,6 @@ pub fn cons<H, T>(head: H, tail: T) -> Cons<H, T> {
     Cons { head, tail }
 }
 
-impl<Head, Tail> Cons<Head, Tail> {
-    /// Returns a iterator over this cons-list.
-    pub fn iter<'a>(&'a self) -> ConsIterator<'a, Self> {
-        ConsIterator::new(self)
-    }
-}
-
 /// A cons-list containing a set of labeled values.
 pub type LVCons<Label, Tail> = Cons<LabeledValue<Label>, Tail>;
 /// A cons-list containing only labels.
@@ -75,7 +68,12 @@ where
     }
 }
 
-impl<Head, Tail> Cons<Head, Tail> where Head: Label {
+impl<Head, Tail> Cons<Head, Tail> {
+    /// Returns a iterator over this cons-list.
+    pub fn iter<'a>(&'a self) -> ConsIterator<'a, Self> {
+        ConsIterator::new(self)
+    }
+
     /// Returns `true` if target label exists in this list.
     ///
     /// Convenience function for calling
