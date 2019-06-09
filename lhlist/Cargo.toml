@@ -7,7 +7,9 @@ edition = "2018"
 readme = "../README.md"
 keywords = ["data-structure", "collection", "heterogeneous"]
 categories = ["data-structures"]
+license-file = "LICENSE"
+repository = "https://github.com/agnes-rs/lhlist"
 
 [dependencies]
-label_attribute = { path = "../label_attribute" }
+label_attribute = { version = "0.1", path = "../label_attribute" }
 typenum = "1.10.0"
