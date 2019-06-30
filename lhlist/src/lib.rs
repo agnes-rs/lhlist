@@ -107,4 +107,6 @@ pub use relation::{Bool, False, LabelEq, Member, ToBool, True};
 mod lookup;
 pub use lookup::LookupElemByLabel;
 
+mod ordered_set;
+
 pub mod iter;
