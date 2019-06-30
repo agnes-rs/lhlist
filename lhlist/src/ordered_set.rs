@@ -1,5 +1,5 @@
-use crate::Label;
-use crate::{Cons, LabeledValue, Nil};
+use crate::{Cons, LabeledValue, Nil, Member, False};
+use crate::{Label};
 
 impl OrderedHSet for Nil {}
 
@@ -9,6 +9,7 @@ pub trait OrderedHSet: Sized {
     fn prepend<H>(self, h: LabeledValue<H>) -> Cons<LabeledValue<H>, Self>
     where
         H: Label,
+        Self: Member<H, Output=False>,
     {
         Cons {
             head: h,
@@ -27,12 +28,14 @@ mod tests {
         #[label(type=String, crate=crate)]
         struct ProductName;
 
+        #[label(type=u8, crate=crate)]
+        struct ProductId;
+
         let nil = Nil {};
         let elem = LabeledValue::<ProductName>::new("Shampoo".to_string());
-        // This should not compile once we are done
+        let another_elem = LabeledValue::<ProductId>::new(10);
         let _ordered_set = nil
-            .prepend(elem.clone())
-            .prepend(elem.clone())
-            .prepend(elem);
+            .prepend(elem)
+            .prepend(another_elem);
     }
 }
