@@ -31,11 +31,16 @@ mod tests {
         #[label(type=u8, crate=crate)]
         struct ProductId;
 
+        #[label(type=u8, crate=crate)]
+        struct ShelfId;
+
         let nil = Nil {};
-        let elem = LabeledValue::<ProductName>::new("Shampoo".to_string());
-        let another_elem = LabeledValue::<ProductId>::new(10);
+        let name = LabeledValue::<ProductName>::new("Shampoo".to_string());
+        let product_id = LabeledValue::<ProductId>::new(10);
+        let shelf_id = LabeledValue::<ShelfId>::new(10);
         let _ordered_set = nil
-            .prepend(elem)
-            .prepend(another_elem);
+            .prepend(name)
+            .prepend(product_id)
+            .prepend(shelf_id);
     }
 }
