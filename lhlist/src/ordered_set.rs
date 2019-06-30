@@ -1,5 +1,5 @@
-use crate::{Cons, LabeledValue, Nil, Member, False};
-use crate::{Label};
+use crate::Label;
+use crate::{Cons, False, LabeledValue, Member, Nil};
 
 impl OrderedHSet for Nil {}
 
@@ -9,7 +9,7 @@ pub trait OrderedHSet: Sized {
     fn prepend<H>(self, h: LabeledValue<H>) -> Cons<LabeledValue<H>, Self>
     where
         H: Label,
-        Self: Member<H, Output=False>,
+        Self: Member<H, Output = False>,
     {
         Cons {
             head: h,
@@ -39,9 +39,9 @@ where
 }
 
 impl<H, T> Union<Nil> for Cons<LabeledValue<H>, T>
-    where
-        H: Label,
-        T: OrderedHSet,
+where
+    H: Label,
+    T: OrderedHSet,
 {
     type Output = Cons<LabeledValue<H>, T>;
 
@@ -50,8 +50,7 @@ impl<H, T> Union<Nil> for Cons<LabeledValue<H>, T>
     }
 }
 
-impl Union<Nil> for Nil
-{
+impl Union<Nil> for Nil {
     type Output = Nil;
 
     fn union(self, rhs: Nil) -> Self::Output {
@@ -59,17 +58,19 @@ impl Union<Nil> for Nil
     }
 }
 
-impl<H1, T1, H2> Union<Cons<LabeledValue<H2>, Nil>> for Cons<LabeledValue<H1>, T1>
+impl<H1, T1, H2, T2> Union<Cons<LabeledValue<H2>, T2>> for Cons<LabeledValue<H1>, T1>
 where
     H1: Label,
     T1: OrderedHSet,
     H2: Label,
-    Self: Member<H2, Output=False>,
+    T2: OrderedHSet,
+    Self: Member<H2, Output = False>,
+    T2: Union<Cons<LabeledValue<H2>, Cons<LabeledValue<H1>, T1>>>,
 {
-    type Output = Cons<LabeledValue<H2>, Cons<LabeledValue<H1>, T1>>;
+    type Output = <T2 as Union<Cons<LabeledValue<H2>, Cons<LabeledValue<H1>, T1>>>>::Output;
 
-    fn union(self, rhs: Cons<LabeledValue<H2>, Nil>) -> Self::Output {
-        self.prepend(rhs.head)
+    fn union(self, rhs: Cons<LabeledValue<H2>, T2>) -> Self::Output {
+        rhs.tail.union(self.prepend(rhs.head))
     }
 }
 
@@ -97,7 +98,8 @@ mod tests {
         let product_id = LabeledValue::<ProductId>::new(10);
         let shelf_id = LabeledValue::<ShelfId>::new(10);
         let shelf_name = LabeledValue::<ShelfName>::new("Home".to_string());
-        let ordered_set = nil.clone()
+        let ordered_set = nil
+            .clone()
             .prepend(name)
             .prepend(product_id)
             .prepend(shelf_id);
