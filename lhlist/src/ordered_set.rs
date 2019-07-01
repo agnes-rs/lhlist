@@ -1,8 +1,13 @@
 use crate::Label;
 use crate::{Cons, False, Member, Nil};
 
+/// Nil corresponds to an empty set.
 impl OrderedHSet for Nil {}
 
+/// A labeled heterogeneous list is a set as long as:
+/// - the head H is labeled;
+/// - the tail T is a set;
+/// - T does not contain H.
 impl<H, T> OrderedHSet for Cons<H, T>
 where
     H: Label,
@@ -10,6 +15,10 @@ where
 {}
 
 pub trait OrderedHSet {
+    /// It creates a new set by prepending `h` to `self`.
+    ///
+    /// If there is another element in `self` with the same
+    /// label as `h`, it fails at compile-time.
     fn prepend<H>(self, h: H) -> Cons<H, Self>
     where
         H: Label,
@@ -22,6 +31,10 @@ pub trait OrderedHSet {
     }
 }
 
+/// The union operation for sets.
+///
+/// It is not commutative: the order of the elements in the final set
+/// depends on the order of the operands.
 pub trait Union<Rhs: OrderedHSet> {
     type Output: OrderedHSet;
 
