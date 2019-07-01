@@ -26,51 +26,31 @@ pub trait Union<Rhs: OrderedHSet> {
         Self: OrderedHSet;
 }
 
-impl<H, T> Union<Cons<LabeledValue<H>, T>> for Nil
+impl<Rhs> Union<Rhs> for Nil
 where
-    H: Label,
-    T: OrderedHSet,
+    Rhs: OrderedHSet
 {
-    type Output = Cons<LabeledValue<H>, T>;
+    type Output = Rhs;
 
-    fn union(self, rhs: Cons<LabeledValue<H>, T>) -> Self::Output {
+    fn union(self, rhs: Rhs) -> Self::Output {
         rhs
     }
 }
 
-impl<H, T> Union<Nil> for Cons<LabeledValue<H>, T>
+impl<H, T, Rhs> Union<Rhs> for Cons<LabeledValue<H>, T>
 where
     H: Label,
-    T: OrderedHSet,
+    T: OrderedHSet + Union<Rhs>,
+    Rhs: OrderedHSet,
+    Cons<LabeledValue<H>, <T as Union<Rhs>>::Output>: OrderedHSet,
 {
-    type Output = Cons<LabeledValue<H>, T>;
+    type Output = Cons<LabeledValue<H>, <T as Union<Rhs>>::Output>;
 
-    fn union(self, _rhs: Nil) -> Self::Output {
-        self
-    }
-}
-
-impl Union<Nil> for Nil {
-    type Output = Nil;
-
-    fn union(self, rhs: Nil) -> Self::Output {
-        rhs
-    }
-}
-
-impl<H1, T1, H2, T2> Union<Cons<LabeledValue<H2>, T2>> for Cons<LabeledValue<H1>, T1>
-where
-    H1: Label,
-    T1: OrderedHSet,
-    H2: Label,
-    T2: OrderedHSet,
-    Self: Member<H2, Output = False>,
-    T2: Union<Cons<LabeledValue<H2>, Cons<LabeledValue<H1>, T1>>>,
-{
-    type Output = <T2 as Union<Cons<LabeledValue<H2>, Cons<LabeledValue<H1>, T1>>>>::Output;
-
-    fn union(self, rhs: Cons<LabeledValue<H2>, T2>) -> Self::Output {
-        rhs.tail.union(self.prepend(rhs.head))
+    fn union(self, rhs: Rhs) -> Self::Output {
+        Cons {
+            head: self.head,
+            tail: self.tail.union(rhs),
+        }
     }
 }
 
@@ -93,18 +73,27 @@ mod tests {
         #[label(type=String, crate=crate)]
         struct ShelfName;
 
+        #[label(type=String, crate=crate)]
+        struct StoreName;
+
+        #[label(type=f64, crate=crate)]
+        struct Price;
+
         let nil = Nil {};
         let name = LabeledValue::<ProductName>::new("Shampoo".to_string());
         let product_id = LabeledValue::<ProductId>::new(10);
         let shelf_id = LabeledValue::<ShelfId>::new(10);
         let shelf_name = LabeledValue::<ShelfName>::new("Home".to_string());
+        let store_name = LabeledValue::<StoreName>::new("X".to_string());
+        let price = LabeledValue::<Price>::new(12.0);
         let ordered_set = nil
             .clone()
             .prepend(name)
             .prepend(product_id)
             .prepend(shelf_id);
-        let singleton = nil.prepend(shelf_name);
+        let singleton = nil.clone().prepend(shelf_name);
+        let another_set = nil.clone().prepend(store_name).prepend(price);
 
-        ordered_set.union(singleton);
+        ordered_set.union(singleton).union(another_set);
     }
 }
