@@ -9,11 +9,11 @@ where
     T: OrderedHSet + Member<H, Output = False>,
 {}
 
-pub trait OrderedHSet: Sized {
+pub trait OrderedHSet {
     fn prepend<H>(self, h: H) -> Cons<H, Self>
     where
         H: Label,
-        Self: Member<H, Output = False>,
+        Self: Member<H, Output = False> + Sized,
     {
         Cons {
             head: h,
