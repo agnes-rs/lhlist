@@ -1,16 +1,16 @@
 use crate::Label;
-use crate::{Cons, False, LabeledValue, Member, Nil};
+use crate::{Cons, False, Member, Nil};
 
 impl OrderedHSet for Nil {}
 
-impl<H, T> OrderedHSet for Cons<LabeledValue<H>, T>
+impl<H, T> OrderedHSet for Cons<H, T>
 where
     H: Label,
     T: OrderedHSet + Member<H, Output = False>,
 {}
 
 pub trait OrderedHSet: Sized {
-    fn prepend<H>(self, h: LabeledValue<H>) -> Cons<LabeledValue<H>, Self>
+    fn prepend<H>(self, h: H) -> Cons<H, Self>
     where
         H: Label,
         Self: Member<H, Output = False>,
@@ -41,14 +41,14 @@ where
     }
 }
 
-impl<H, T, Rhs> Union<Rhs> for Cons<LabeledValue<H>, T>
+impl<H, T, Rhs> Union<Rhs> for Cons<H, T>
 where
     H: Label,
     T: OrderedHSet + Union<Rhs>,
     Rhs: OrderedHSet,
-    Cons<LabeledValue<H>, <T as Union<Rhs>>::Output>: OrderedHSet,
+    Cons<H, <T as Union<Rhs>>::Output>: OrderedHSet,
 {
-    type Output = Cons<LabeledValue<H>, <T as Union<Rhs>>::Output>;
+    type Output = Cons<H, <T as Union<Rhs>>::Output>;
 
     fn union(self, rhs: Rhs) -> Self::Output {
         Cons {
