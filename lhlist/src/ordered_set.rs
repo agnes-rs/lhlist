@@ -83,20 +83,18 @@ mod tests {
         #[label(type=f64, crate=crate)]
         struct Price;
 
-        let nil = Nil {};
         let name = LabeledValue::<ProductName>::new("Shampoo".to_string());
         let product_id = LabeledValue::<ProductId>::new(10);
         let shelf_id = LabeledValue::<ShelfId>::new(10);
         let shelf_name = LabeledValue::<ShelfName>::new("Home".to_string());
         let store_name = LabeledValue::<StoreName>::new("X".to_string());
         let price = LabeledValue::<Price>::new(12.0);
-        let ordered_set = nil
-            .clone()
+        let ordered_set = Nil
             .prepend(name)
             .prepend(product_id)
             .prepend(shelf_id);
-        let singleton = nil.clone().prepend(shelf_name);
-        let another_set = nil.clone().prepend(store_name).prepend(price);
+        let singleton = Nil.prepend(shelf_name);
+        let another_set = Nil.prepend(store_name).prepend(price);
 
         ordered_set.union(singleton).union(another_set);
     }
