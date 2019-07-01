@@ -4,7 +4,7 @@ use crate::{Cons, False, Member, Nil};
 /// Nil corresponds to an empty set.
 impl OrderedHSet for Nil {}
 
-/// A labeled heterogeneous list if:
+/// A labeled heterogeneous list is an `OrderedHSet` if:
 /// - the head `H` is labeled;
 /// - the tail `T` is a set;
 /// - `T` does not contain any element with same **label** of `H`.
