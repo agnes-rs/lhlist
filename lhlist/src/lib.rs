@@ -108,5 +108,6 @@ mod lookup;
 pub use lookup::LookupElemByLabel;
 
 mod ordered_set;
+pub use ordered_set::{OrderedHSet, Union};
 
 pub mod iter;

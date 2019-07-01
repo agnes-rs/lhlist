@@ -4,16 +4,18 @@ use crate::{Cons, False, Member, Nil};
 /// Nil corresponds to an empty set.
 impl OrderedHSet for Nil {}
 
-/// A labeled heterogeneous list is a set as long as:
-/// - the head H is labeled;
-/// - the tail T is a set;
-/// - T does not contain H.
+/// A labeled heterogeneous list if:
+/// - the head `H` is labeled;
+/// - the tail `T` is a set;
+/// - `T` does not contain any element with same **label** of `H`.
 impl<H, T> OrderedHSet for Cons<H, T>
 where
     H: Label,
     T: OrderedHSet + Member<H, Output = False>,
 {}
 
+/// An `OrderedHSet` is a labeled heterogeneous list that does not contain
+/// elements with the same label.
 pub trait OrderedHSet {
     /// It creates a new set by prepending `h` to `self`.
     ///
@@ -31,13 +33,18 @@ pub trait OrderedHSet {
     }
 }
 
-/// The union operation for sets.
+/// The union operation for [OrderedHSet](trait.OrderedHSet.html)s.
 ///
-/// It is not commutative: the order of the elements in the final set
+/// It is not commutative: the order of the elements in the final
 /// depends on the order of the operands.
 pub trait Union<Rhs: OrderedHSet> {
+    /// The result type of the union operation.
     type Output: OrderedHSet;
 
+    /// It returns the union of two [OrderedHSet](trait.OrderedHSet.html)s.
+    ///
+    /// The elements of `Self` are added at the beginning of the resulting
+    /// [OrderedHSet](trait.OrderedHSet.html).
     fn union(self, rhs: Rhs) -> Self::Output
     where
         Self: OrderedHSet;
