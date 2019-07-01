@@ -3,7 +3,11 @@ use crate::{Cons, False, LabeledValue, Member, Nil};
 
 impl OrderedHSet for Nil {}
 
-impl<H: Label, T: OrderedHSet> OrderedHSet for Cons<LabeledValue<H>, T> {}
+impl<H, T> OrderedHSet for Cons<LabeledValue<H>, T>
+where
+    H: Label,
+    T: OrderedHSet + Member<H, Output = False>,
+{}
 
 pub trait OrderedHSet: Sized {
     fn prepend<H>(self, h: LabeledValue<H>) -> Cons<LabeledValue<H>, Self>
